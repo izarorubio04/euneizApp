@@ -6,7 +6,6 @@ import { Home } from "./pages/Home/Home";          // 👈 Importar Home
 import { Library } from "./pages/Library/Library"; // 👈 Importar Library
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard"; // 👈 Importar NoticeBoard
 
-// eslint-disable-next-line react-refresh/only-export-components
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <h1>Cargando...</h1>; // Opcional: evitar parpadeos
@@ -14,7 +13,6 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 function App() {
   return (
     <AuthProvider>
@@ -61,3 +59,5 @@ function App() {
     </AuthProvider>
   );
 }
+
+export default App;
