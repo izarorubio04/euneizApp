@@ -1,0 +1,44 @@
+.home-container {
+  padding: 40px;
+  text-align: center;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.menu-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+  flex-wrap: wrap; /* Para que se adapte a móviles */
+}
+
+.menu-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.menu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  background-color: #eef2ff; /* Color ligero al pasar el mouse */
+}
+
+.icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.menu-card h3 {
+  margin: 0;
+  color: #333;
+}
