@@ -4,6 +4,7 @@ import { Login } from "./pages/Login/Login";
 import { Profile } from "./pages/Profile/Profile";
 import { Home } from "./pages/Home/Home";          // 👈 Importar Home
 import { Library } from "./pages/Library/Library"; // 👈 Importar Library
+import { Favorites} from "./pages/Library/Favorites";
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard"; // 👈 Importar NoticeBoard
 
 const ProtectedRoute = ({ children }) => {
@@ -43,6 +44,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Library />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/Favorites" 
+          element={
+            <ProtectedRoute>
+              <Favorites />
             </ProtectedRoute>
           } 
         />

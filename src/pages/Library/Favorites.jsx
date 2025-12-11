@@ -1,10 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Library.css";
-import Favorites from "./Favorites";
 
-// --- FUNCIONES AUXILIARES (parseo CSV) ---
-
+// Reutilizamos las mismas funciones de parseo:
 function parseCSVLine(text) {
   const result = [];
   let current = "";
@@ -71,20 +69,10 @@ function parseCsvToBooks(text, area) {
   });
 }
 
-// --- COMPONENTE PRINCIPAL ---
-
-export const Library = () => {
+const Favorites = () => {
   const navigate = useNavigate();
 
   const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [query, setQuery] = useState("");
-  const [areaFilter, setAreaFilter] = useState("Todas");
-  const [statusFilter, setStatusFilter] = useState("Todos");
-
-  // FAVORITOS -> guardamos IDs en localStorage
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("favoriteIds")) || [];
@@ -92,25 +80,10 @@ export const Library = () => {
       return [];
     }
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const toggleFavorite = (id) => {
-    setFavoriteIds((prev) => {
-      const updated = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-
-      try {
-        localStorage.setItem("favoriteIds", JSON.stringify(updated));
-      } catch (e) {
-        console.warn("No se pudo guardar favoriteIds en localStorage", e);
-      }
-
-      return updated;
-    });
-  };
-
-  const isFavorite = (id) => favoriteIds.includes(id);
-
+  // Cargar todos los libros (igual que en Library)
   useEffect(() => {
     async function loadBooks() {
       try {
@@ -120,7 +93,9 @@ export const Library = () => {
         ]);
 
         if (!tecRes.ok || !salRes.ok) {
-          console.warn("Archivos CSV no encontrados, usando datos de ejemplo.");
+          console.warn(
+            "Archivos CSV no encontrados al cargar favoritos, usando mock."
+          );
           const mockBooks = [
             {
               id: "mock-1",
@@ -160,7 +135,7 @@ export const Library = () => {
         setError("");
       } catch (err) {
         console.error(err);
-        setError("Error cargando los datos. Revisa los CSV.");
+        setError("Error cargando los datos.");
       } finally {
         setLoading(false);
       }
@@ -169,38 +144,27 @@ export const Library = () => {
     loadBooks();
   }, []);
 
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const text = query.trim().toLowerCase();
+  // Libros que están en favoritos
+  const favoriteBooks = useMemo(() => {
+    return books.filter((b) => favoriteIds.includes(b.id));
+  }, [books, favoriteIds]);
 
-      if (text) {
-        const inText =
-          book.title.toLowerCase().includes(text) ||
-          book.author.toLowerCase().includes(text) ||
-          (book.summary || "").toLowerCase().includes(text) ||
-          book.area.toLowerCase().includes(text) ||
-          book.subjects.some((s) => s.toLowerCase().includes(text));
-
-        if (!inText) return false;
+  // Quitar un libro de favoritos
+  const handleRemoveFavorite = (id) => {
+    setFavoriteIds((prev) => {
+      const updated = prev.filter((x) => x !== id);
+      try {
+        localStorage.setItem("favoriteIds", JSON.stringify(updated));
+      } catch (e) {
+        console.warn("No se pudo guardar favoriteIds en localStorage", e);
       }
-
-      if (areaFilter !== "Todas" && book.area !== areaFilter) return false;
-      if (statusFilter !== "Todos" && book.status !== statusFilter) return false;
-
-      return true;
+      return updated;
     });
-  }, [books, query, areaFilter, statusFilter]);
-
-  const handleTagClick = (tag) => {
-    const t = tag.toLowerCase();
-    setQuery((current) =>
-      current.toLowerCase() === t ? "" : tag
-    );
   };
 
   return (
     <div className="library-page">
-      {/* Sidebar izquierda */}
+      {/* Sidebar igual que en Library, pero con Favoritos activo */}
       <aside className="library-sidebar">
         <div>
           <div className="sidebar-header">
@@ -212,15 +176,15 @@ export const Library = () => {
             <div className="sidebar-section-title">Menú</div>
 
             <button
-              className="sidebar-item sidebar-item-active"
+              className="sidebar-item"
               onClick={() => navigate("/")}
             >
               📚 Todos los libros
             </button>
 
             <button
-              className="sidebar-item"
-              onClick={() => navigate("/Favorites")}
+              className="sidebar-item sidebar-item-active"
+              onClick={() => navigate("/favoritos")}
             >
               ❤️ Favoritos
             </button>
@@ -236,57 +200,27 @@ export const Library = () => {
         </div>
       </aside>
 
-      {/* Contenido principal */}
       <main className="library-main">
         <header className="library-header">
           <div>
-            <h2>Catálogo de Libros</h2>
+            <h2>Libros favoritos</h2>
             <p className="header-subtitle">
-              Busca por título, autor, materias…
+              Aquí se muestran solo los libros que has marcado con ❤️.
             </p>
-          </div>
-
-          <div className="header-filters">
-            <input
-              type="text"
-              placeholder="🔍 Buscar libro..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="search-input"
-            />
-
-            <select
-              className="filter-select"
-              value={areaFilter}
-              onChange={(e) => setAreaFilter(e.target.value)}
-            >
-              <option value="Todas">Todas las áreas</option>
-              <option value="Tecnología">Tecnología</option>
-              <option value="Salud">Salud</option>
-            </select>
-
-            <select
-              className="filter-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="Todos">Estado: Todos</option>
-              <option value="disponible">Disponibles</option>
-              <option value="prestado">Prestados</option>
-            </select>
           </div>
         </header>
 
         {loading && (
-          <div className="loading-spinner">Cargando biblioteca...</div>
+          <div className="loading-spinner">Cargando favoritos...</div>
         )}
+
         {error && !loading && (
           <div className="error-message">{error}</div>
         )}
 
         {!loading && (
           <section className="books-grid">
-            {filteredBooks.map((book) => (
+            {favoriteBooks.map((book) => (
               <article key={book.id} className="book-card">
                 <div
                   className={
@@ -328,35 +262,26 @@ export const Library = () => {
 
                   <div className="book-tags">
                     {book.subjects.slice(0, 3).map((subject) => (
-                      <button
-                        key={subject}
-                        className="book-tag"
-                        onClick={() => handleTagClick(subject)}
-                      >
+                      <span key={subject} className="book-tag">
                         {subject}
-                      </button>
+                      </span>
                     ))}
                   </div>
 
-                  {/* Botón de favoritos dentro de la tarjeta */}
+                  {/* Botón para quitar de favoritos */}
                   <button
-                    className={
-                      "book-fav-btn " +
-                      (isFavorite(book.id) ? "book-fav-btn-saved" : "")
-                    }
-                    onClick={() => toggleFavorite(book.id)}
+                    className="book-fav-btn book-fav-btn-saved"
+                    onClick={() => handleRemoveFavorite(book.id)}
                   >
-                    {isFavorite(book.id)
-                      ? "✔ Guardado en favoritos"
-                      : "❤️ Añadir a favoritos"}
+                    Quitar de favoritos
                   </button>
                 </div>
               </article>
             ))}
 
-            {!error && !loading && filteredBooks.length === 0 && (
+            {!error && !loading && favoriteBooks.length === 0 && (
               <div className="empty-state">
-                No hemos encontrado libros con esos filtros.
+                No tienes libros favoritos todavía.
               </div>
             )}
           </section>
@@ -366,4 +291,5 @@ export const Library = () => {
   );
 };
 
-export default Library;
+export default Favorites;
+
