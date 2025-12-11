@@ -1,6 +1,18 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./Library.css";
+
+const RESERVATION_TIME = 20 * 24 * 60 * 60 * 1000; // 20 días en ms
+
+function formatTime(ms) {
+  if (ms <= 0) return "❌ Expirado";
+
+  const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+
+  return `${days} días, ${hours} h`;
+}
 
 // ---------- Funciones auxiliares para CSV ----------
 
@@ -66,21 +78,28 @@ function parseCsvToBooks(text, area) {
     });
 }
 
-export const Favorites = () => {
+export const Reservations = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [books, setBooks] = useState([]);
-  const [favoriteIds, setFavoriteIds] = useState(() => {
+  const [reservations, setReservations] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("favoriteIds")) || [];
+      return JSON.parse(localStorage.getItem("reservations")) || [];
     } catch {
       return [];
     }
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [now, setNow] = useState(Date.now());
 
-  // Cargar libros igual que en Library
+  // Actualizar "ahora" cada minuto para refrescar el contador
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Cargar libros
   useEffect(() => {
     async function loadBooks() {
       try {
@@ -125,10 +144,8 @@ export const Favorites = () => {
         const salBooks = parseCsvToBooks(salText, "Salud");
 
         setBooks([...tecBooks, ...salBooks]);
-        setError("");
       } catch (err) {
         console.error(err);
-        setError("Error cargando los datos.");
       } finally {
         setLoading(false);
       }
@@ -137,24 +154,32 @@ export const Favorites = () => {
     loadBooks();
   }, []);
 
-  // Libros favoritos reales
-  const favoriteBooks = useMemo(() => {
-    return books.filter((b) => favoriteIds.includes(b.id));
-  }, [books, favoriteIds]);
+  // Libros reservados por el usuario actual
+  const reservedBooks = useMemo(() => {
+    const userEmail = user?.email || "usuario-desconocido";
 
-  const handleRemoveFavorite = (id) => {
-    const updated = favoriteIds.filter((x) => x !== id);
-    setFavoriteIds(updated);
-    try {
-      localStorage.setItem("favoriteIds", JSON.stringify(updated));
-    } catch (e) {
-      console.warn("No se pudo guardar favoriteIds en localStorage", e);
-    }
-  };
+    return reservations
+      .filter((r) => r.userEmail === userEmail)
+      .map((r) => {
+        const book = books.find((b) => b.id === r.bookId);
+        if (!book) return null;
+
+        const expirationTime = r.timestamp + RESERVATION_TIME;
+        const remaining = expirationTime - now;
+
+        return {
+          ...book,
+          remaining,
+          userEmail: r.userEmail,
+          reservationKey: `${r.userEmail}-${r.bookId}`,
+        };
+      })
+      .filter(Boolean);
+  }, [books, reservations, now, user]);
 
   return (
     <div className="library-page">
-      {/* Sidebar igual que en Library, pero con Favoritos activo */}
+      {/* Sidebar */}
       <aside className="library-sidebar">
         <div>
           <div className="sidebar-header">
@@ -173,14 +198,14 @@ export const Favorites = () => {
             </button>
 
             <button
-              className="sidebar-item sidebar-item-active"
+              className="sidebar-item"
               onClick={() => navigate("/favorites")}
             >
               ❤️ Favoritos
             </button>
 
             <button
-              className="sidebar-item"
+              className="sidebar-item sidebar-item-active"
               onClick={() => navigate("/reservas")}
             >
               📘 Reservas
@@ -197,84 +222,71 @@ export const Favorites = () => {
         </div>
       </aside>
 
+      {/* Contenido principal */}
       <main className="library-main">
         <header className="library-header">
           <div>
-            <h2>Libros favoritos</h2>
+            <h2>Mis reservas</h2>
             <p className="header-subtitle">
-              Aquí se muestran solo los libros que has marcado con ❤️.
+              Libros reservados por tu cuenta. Cada reserva dura 20 días.
             </p>
           </div>
         </header>
 
         {loading && (
-          <div className="loading-spinner">Cargando favoritos...</div>
+          <div className="loading-spinner">Cargando reservas...</div>
         )}
 
-        {error && !loading && (
-          <div className="error-message">{error}</div>
+        {!loading && reservedBooks.length === 0 && (
+          <div className="empty-state">
+            No tienes libros reservados.
+          </div>
         )}
 
-        {!loading && (
-          <section className="books-grid">
-            {favoriteBooks.map((book) => (
-              <article key={book.id} className="book-card">
-                <div
-                  className={
-                    "book-image " +
-                    (book.area === "Tecnología"
-                      ? "book-image-tech"
-                      : "book-image-health")
-                  }
-                >
-                  <span>{book.area}</span>
-                </div>
-
-                <div className="book-content">
-                  <div className="book-header">
-                    <h3 className="book-title">{book.title}</h3>
-                  </div>
-
-                  <p className="book-author">{book.author}</p>
-
-                  {book.summary && (
-                    <p className="book-summary" title={book.summary}>
-                      {book.summary.length > 80
-                        ? book.summary.substring(0, 80) + "..."
-                        : book.summary}
-                    </p>
-                  )}
-
-                  <div className="book-tags">
-                    {book.subjects.slice(0, 3).map((subject) => (
-                      <span key={subject} className="book-tag">
-                        {subject}
-                      </span>
-                    ))}
-                  </div>
-
-                  <button
-                    className="book-fav-btn book-fav-btn-saved"
-                    onClick={() => handleRemoveFavorite(book.id)}
-                  >
-                    ❌ Quitar de favoritos
-                  </button>
-                </div>
-              </article>
-            ))}
-
-            {!error && !loading && favoriteBooks.length === 0 && (
-              <div className="empty-state">
-                No tienes libros favoritos todavía.
+        <section className="books-grid">
+          {reservedBooks.map((book) => (
+            <article key={book.reservationKey} className="book-card">
+              <div
+                className={
+                  "book-image " +
+                  (book.area === "Tecnología"
+                    ? "book-image-tech"
+                    : "book-image-health")
+                }
+              >
+                <span>{book.area}</span>
               </div>
-            )}
-          </section>
-        )}
+
+              <div className="book-content">
+                <div className="book-header">
+                  <h3 className="book-title">{book.title}</h3>
+                </div>
+
+                <p className="book-author">{book.author}</p>
+
+                {book.summary && (
+                  <p className="book-summary">
+                    {book.summary.length > 80
+                      ? book.summary.slice(0, 80) + "..."
+                      : book.summary}
+                  </p>
+                )}
+
+                <p className="book-reservation-time">
+                  ⏳ Tiempo restante:{" "}
+                  <strong>{formatTime(book.remaining)}</strong>
+                </p>
+
+                <p className="book-author">
+                  Reservado por: <strong>{book.userEmail}</strong>
+                </p>
+              </div>
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   );
 };
 
-export default Favorites;
-
-
+export default Reservations;

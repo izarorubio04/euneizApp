@@ -6,6 +6,7 @@ import { Profile } from "./pages/Profile/Profile";
 import { Home } from "./pages/Home/Home";          // 👈 Importar Home
 import { Library } from "./pages/Library/Library"; // 👈 Importar Library
 import { Favorites} from "./pages/Library/Favorites";
+import { Reservations } from "./pages/Library/Reservations";
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard"; // 👈 Importar NoticeBoard
 
 import { MainLayout } from "./components/Layout/MainLayout"; // <--- IMPORTAR
@@ -35,6 +36,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/library" element={<Library />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="reservas" element={<Reservations />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
           {/* Aquí añadiremos las rutas faltantes (rooms, communities) más adelante */}
           <Route path="*" element={<Navigate to="/home" />} />
