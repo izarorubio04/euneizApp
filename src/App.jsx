@@ -10,12 +10,6 @@ import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard"; // 👈 Importar 
 
 import { MainLayout } from "./components/Layout/MainLayout"; // <--- IMPORTAR
 
-// Páginas
-import { Login } from "./pages/Login/Login";
-import { Home } from "./pages/Home/Home";
-import { Library } from "./pages/Library/Library";
-import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard";
-import { Profile } from "./pages/Profile/Profile";
 
 // Componente de protección
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +34,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
           {/* Aquí añadiremos las rutas faltantes (rooms, communities) más adelante */}
           <Route path="*" element={<Navigate to="/home" />} />

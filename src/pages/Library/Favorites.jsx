@@ -69,7 +69,7 @@ function parseCsvToBooks(text, area) {
   });
 }
 
-const Favorites = () => {
+export const Favorites = () => {
   const navigate = useNavigate();
 
   const [books, setBooks] = useState([]);
