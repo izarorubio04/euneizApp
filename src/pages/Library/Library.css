@@ -259,7 +259,7 @@
   padding: 20px 0;
 }
 
-/* Un poco de responsive para pantallas pequeñas */
+/* Responsive */
 @media (max-width: 900px) {
   .library-page {
     flex-direction: column;
@@ -288,4 +288,26 @@
   .search-input {
     flex: 1;
   }
+}
+
+/* Botón de favoritos dentro de la tarjeta */
+.book-fav-btn {
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.book-fav-btn:hover {
+  background: #ddd6fe;
+}
+
+.book-fav-btn-saved {
+  background: #d1fae5;
+  color: #065f46;
 }
