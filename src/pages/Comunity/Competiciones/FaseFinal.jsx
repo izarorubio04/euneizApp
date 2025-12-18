@@ -34,12 +34,12 @@ export default function FaseFinal() {
             <button className="comp-tab-btn">Fase de grupos</button>
           </Link>
 
-          <Link to={`/competiciones/${comp.id}/estadisticas`}>
-            <button className="comp-tab-btn">Estadísticas</button>
-          </Link>
-
           <Link to={`/competiciones/${comp.id}/fase-final`}>
             <button className="comp-tab-btn active">Fase final</button>
+          </Link>
+
+          <Link to={`/competiciones/${comp.id}/estadisticas`}>
+            <button className="comp-tab-btn">Estadísticas</button>
           </Link>
         </div>
       </div>

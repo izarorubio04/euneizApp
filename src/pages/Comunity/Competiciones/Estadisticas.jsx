@@ -36,12 +36,12 @@ export default function Estadisticas() {
             <button className="comp-tab-btn">Fase de grupos</button>
           </Link>
 
-          <Link to={`/competiciones/${comp.id}/estadisticas`}>
-            <button className="comp-tab-btn active">Estadísticas</button>
-          </Link>
-
           <Link to={`/competiciones/${comp.id}/fase-final`}>
             <button className="comp-tab-btn">Fase final</button>
+          </Link>
+
+          <Link to={`/competiciones/${comp.id}/estadisticas`}>
+            <button className="comp-tab-btn active">Estadísticas</button>
           </Link>
         </div>
       </div>

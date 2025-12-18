@@ -1,64 +1,171 @@
-/* src/components/Layout/MainLayout.css */
-.layout-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8f9fa; /* Fondo gris muy suave para la app */
-  text-align: left; /* Reseteamos el text-align center de Vite por defecto */
-}
+/* =========================
+   LAYOUT GENERAL
+   ========================= */
 
-/* Sidebar Estilo Base */
-.sidebar {
-  width: 260px;
-  background-color: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-}
-
-.content-area {
-  flex: 1; /* Ocupa el resto del espacio */
-  padding: 2rem;
-  overflow-y: auto;
-}
-
-/* Navegación */
-.sidebar-nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 2rem;
-}
-
-.nav-section {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-weight: bold;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.nav-item {
-  text-decoration: none;
-  color: #4b5563;
-  padding: 0.75rem;
-  border-radius: 8px;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-item:hover {
-  background-color: #f3f4f6;
-}
-
-.nav-item.active {
-  background-color: #e0e7ff;
-  color: #4f46e5;
-  font-weight: 600;
-}
+   .layout-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc; /* Igual que comunidad */
+    text-align: left;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+      sans-serif;
+  }
+  
+  /* =========================
+     SIDEBAR
+     ========================= */
+  
+  .sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  
+  
+  
+  .sidebar-logo {
+    display: flex;
+    align-items: baseline; /* clave para alineación tipográfica */
+    gap: 0.4rem;
+  }
+  
+  .sidebar-logo h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #111827;
+  }
+  
+  .badge-beta {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+  }
+  
+  /* =========================
+     CONTENIDO
+     ========================= */
+  
+  .content-area {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+  
+  /* =========================
+     NAVEGACIÓN
+     ========================= */
+  
+  .sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 2rem;
+  }
+  
+  .nav-section {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Links */
+  .nav-item {
+    text-decoration: none;
+    color: #374151;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    transition: background-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+  }
+  
+  .nav-item:hover {
+    background-color: #f1f5f9;
+  }
+  
+  /* Activo */
+  .nav-item.active {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    font-weight: 600;
+  }
+  
+  /* =========================
+     FOOTER SIDEBAR (USUARIO)
+     ========================= */
+  
+  .sidebar-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #111827;
+    margin-bottom: 0.75rem;
+  }
+  
+  .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #4f46e5;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  
+  .user-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  
+  .user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  
+  .user-role {
+    font-size: 0.7rem;
+    color: #6b7280;
+  }
+  
+  /* Botón salir */
+  .logout-mini-btn {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    border: none;
+    background-color: #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .logout-mini-btn:hover {
+    background-color: #e5e7eb;
+  }
