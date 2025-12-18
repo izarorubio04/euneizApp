@@ -1,4 +1,5 @@
-// src/pages/Home/Home.jsx
+import React from "react";
+// CORRECCIÓN: Quitamos la extensión .jsx para compatibilidad con el resto del proyecto
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
@@ -10,80 +11,132 @@ export const Home = () => {
   // Extraer nombre del email (ej: "juan.perez" de "juan.perez@euneiz.com")
   const userName = user?.email ? user.email.split('@')[0] : "Estudiante";
 
-  // DATOS MOCK (Simulados para prototipar la UI según tu documento)
-  const activeReservation = { 
-    exists: true, 
-    place: "Aula de Estudio 3", 
-    time: "10:00 - 12:00", 
-    status: "Confirmada" 
+  // DATOS MOCK (Simulados para prototipar la UI "Pro")
+  const nextClass = {
+    subject: "Diseño de Interfaces",
+    time: "10:00 - 12:00",
+    room: "Aula 2.4",
+    professor: "Dr. García"
   };
 
-  const highlights = [
-    { id: 1, tag: "Oficial", title: "📅 Calendario de Exámenes publicado", color: "blue" },
-    { id: 2, tag: "E-Sports", title: "🏆 Torneo LoL: Inscripciones abiertas", color: "purple" },
-    { id: 3, tag: "Monte", title: "🌲 Salida al Gorbea este sábado", color: "green" },
+  const pendingTasks = [
+    { id: 1, title: "Entrega Proyecto Final", due: "Mañana", urgent: true },
+    { id: 2, title: "Leer capítulo 4 de UX", due: "Viernes", urgent: false },
+  ];
+
+  const newsFeed = [
+    { id: 1, tag: "Evento", title: "Hackathon EUNEIZ 2024", date: "20 Oct", color: "purple" },
+    { id: 2, tag: "Aviso", title: "Cierre de biblioteca por mantenimiento", date: "22 Oct", color: "red" },
+    { id: 3, tag: "Deportes", title: "Torneo de Pádel: Inscripciones", date: "25 Oct", color: "green" },
   ];
 
   return (
-    <div className="dashboard-container">
-      {/* 1. HEADER / SALUDO */}
+    <div className="home-dashboard">
+      
+      {/* --- HEADER --- */}
       <header className="dashboard-header">
-        <div>
-          <h1>Hola, <span className="highlight-text">{userName}</span> 👋</h1>
-          <p className="subtitle">¿Qué quieres hacer hoy en Euneiz?</p>
+        <div className="header-text">
+          <h1>Hola, <span className="user-highlight">{userName}</span> 👋</h1>
+          <p>¿Listo para aprender algo nuevo hoy?</p>
+        </div>
+        <div className="header-date">
+          <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         </div>
       </header>
 
-      {/* 2. WIDGET: RESUMEN DE HOY (Requisito clave del doc) */}
-      <section className="status-section">
-        <h3>📍 Tu actividad para hoy</h3>
-        {activeReservation.exists ? (
-          <div className="status-card active-res">
-            <div className="status-icon">🕒</div>
-            <div className="status-info">
-              <h4>{activeReservation.place}</h4>
-              <p>{activeReservation.time} • <span className="status-badge">{activeReservation.status}</span></p>
-            </div>
-            <button className="btn-small">Ver QR</button>
-          </div>
-        ) : (
-          <div className="status-card empty">
-            <p>No tienes reservas activas para hoy.</p>
-          </div>
-        )}
-      </section>
+      {/* --- GRID PRINCIPAL --- */}
+      <div className="dashboard-grid">
 
-      {/* 3. ACCESOS RÁPIDOS (Grid de acciones) */}
-      <section className="quick-actions">
-        <h3>Accesos Rápidos</h3>
-        <div className="actions-grid">
-          <button className="action-card" onClick={() => navigate('/rooms')}>
-            <span className="icon">🏢</span>
-            <span>Reservar Aula</span>
-          </button>
-          <button className="action-card" onClick={() => navigate('/library')}>
-            <span className="icon">📖</span>
-            <span>Buscar Libro</span>
-          </button>
-          <button className="action-card" onClick={() => navigate('/communities')}>
-            <span className="icon">👥</span>
-            <span>Mis Clubes</span>
-          </button>
-        </div>
-      </section>
-
-      {/* 4. FEED DE NOVEDADES (Highlights) */}
-      <section className="highlights-section">
-        <h3>🔥 Novedades destacadas</h3>
-        <div className="news-scroll">
-          {highlights.map(item => (
-            <div key={item.id} className="news-card">
-              <span className={`tag tag-${item.color}`}>{item.tag}</span>
-              <h4>{item.title}</h4>
+        {/* COLUMNA IZQUIERDA (Principal) */}
+        <div className="main-column">
+          
+          {/* Widget: Próxima Clase */}
+          <section className="widget next-class-widget">
+            <div className="widget-header">
+              <h3>📍 Próxima Clase</h3>
+              <span className="badge-live">En curso</span>
             </div>
-          ))}
+            <div className="class-card">
+              <div className="class-time">
+                <span className="start-time">10:00</span>
+                <span className="end-time">12:00</span>
+              </div>
+              <div className="class-info">
+                <h4>{nextClass.subject}</h4>
+                <p>👨‍🏫 {nextClass.professor} • 🏢 {nextClass.room}</p>
+              </div>
+              <button className="btn-checkin">Check-in</button>
+            </div>
+          </section>
+
+          {/* Widget: Accesos Rápidos */}
+          <section className="widget quick-actions-widget">
+            <h3>Accesos Rápidos</h3>
+            <div className="actions-grid">
+              <button className="action-card" onClick={() => navigate('/notice-board')}>
+                <span className="action-icon">📢</span>
+                <span>Tablón</span>
+              </button>
+              <button className="action-card" onClick={() => navigate('/library')}>
+                <span className="action-icon">📚</span>
+                <span>Biblioteca</span>
+              </button>
+              <button className="action-card" onClick={() => navigate('/community')}>
+                <span className="action-icon">👥</span>
+                <span>Comunidad</span>
+              </button>
+              <button className="action-card" onClick={() => navigate('/profile')}>
+                <span className="action-icon">⚙️</span>
+                <span>Ajustes</span>
+              </button>
+            </div>
+          </section>
+
         </div>
-      </section>
+
+        {/* COLUMNA DERECHA (Secundaria) */}
+        <div className="side-column">
+
+          {/* Widget: Tareas Pendientes */}
+          <section className="widget tasks-widget">
+            <div className="widget-header">
+              <h3>📝 Tareas Pendientes</h3>
+              <button className="btn-link">Ver todo</button>
+            </div>
+            <ul className="tasks-list">
+              {pendingTasks.map(task => (
+                <li key={task.id} className={`task-item ${task.urgent ? 'urgent' : ''}`}>
+                  <div className="task-check"></div>
+                  <div className="task-content">
+                    <p className="task-title">{task.title}</p>
+                    <span className="task-due">📅 {task.due}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Widget: Noticias Recientes */}
+          <section className="widget news-widget">
+            <h3>🔥 Novedades</h3>
+            <div className="news-list">
+              {newsFeed.map(news => (
+                <div key={news.id} className="news-item">
+                  <div className={`news-tag-dot ${news.color}`}></div>
+                  <div className="news-content">
+                    <span className="news-meta">{news.tag} • {news.date}</span>
+                    <p>{news.title}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
+
+      </div>
     </div>
   );
 };
+
+export default Home;
