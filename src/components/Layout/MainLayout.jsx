@@ -35,9 +35,30 @@ export const MainLayout = () => {
           </NavLink>
 
           <p className="nav-section">COMUNIDAD</p>
-          <NavLink to="/communities" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            👥 Grupos
+
+          <NavLink
+          to="/comunidad/comunidades"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
+            👥 Comunidades
           </NavLink>
+
+        <NavLink
+          to="/comunidad/clubs"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
+          🏫 Clubs
+        </NavLink>
+
+        <NavLink
+          to="/comunidad/competiciones"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
+          🏆 Competiciones
+          </NavLink>
+
+        <NavLink
+          to="/comunidad/psicologia"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
+            🧠 Psicología
+        </NavLink>
 
           <p className="nav-section">SERVICIOS</p>
           <NavLink to="/library" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
