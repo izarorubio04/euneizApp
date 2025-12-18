@@ -1,456 +1,263 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import "./Library.css";
 
-// ---------- Funciones auxiliares para CSV ----------
-
-function parseCSVLine(text) {
-  const result = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-function parseCsvToBooks(text, area) {
-  const lines = text.split("\n");
-  const headers = parseCSVLine(lines[1] || "");
-  const dataLines = lines.slice(2);
-
-  return dataLines
-    .filter((line) => line.trim() !== "")
-    .map((line, index) => {
-      const values = parseCSVLine(line);
-      const row = {};
-
-      headers.forEach((header, i) => {
-        const key = header.replace(/^"|"$/g, "").trim();
-        row[key] = values[i] ? values[i].replace(/^"|"$/g, "") : "";
-      });
-
-      const title = row["Título"] || row["Titulo"] || "Sin título";
-      const author = row["Autor/a"] || "Autor desconocido";
-      const summary = row["Resumen"] || "";
-
-      const rawSubjects =
-        row["Materias/Temáticas"] ||
-        row["Materias/Tem\u00e1ticas"] ||
-        "";
-
-      const subjects = rawSubjects
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      return {
-        id: `${area}-${index}`,
-        title,
-        author,
-        area,
-        subjects,
-        summary,
-        status: "disponible",
-      };
-    });
-}
-
-// ---------- Envío de email (placeholder) ----------
-
-function sendReservationEmail({ userEmail, bookTitle }) {
-  console.log(
-    `Enviar email a eric.ruiz@euneiz.com: ${userEmail} ha reservado "${bookTitle}"`
-  );
-}
-
-// ---------- Componente principal ----------
 
 export const Library = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
-
-  const [books, setBooks] = useState([]);
+  
+  // --- ESTADOS ---
+  const [allBooks, setAllBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("catalogo");
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDegree, setFilterDegree] = useState("");
+  const [filterMaterial, setFilterMaterial] = useState("");
+  
+  const [selectedBook, setSelectedBook] = useState(null);
 
-  const [query, setQuery] = useState("");
-  const [areaFilter, setAreaFilter] = useState("Todas");
-  const [statusFilter, setStatusFilter] = useState("Todos");
-
-  // Favoritos -> guardamos IDs de libros
-  const [favoriteIds, setFavoriteIds] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("favoriteIds")) || [];
-    } catch {
-      return [];
-    }
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem(`euneiz_lib_favs_${user?.email}`);
+    return saved ? JSON.parse(saved) : [];
   });
 
-  // Reservas -> guardamos objetos con info
   const [reservations, setReservations] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("reservations")) || [];
-    } catch {
-      return [];
-    }
+    const saved = localStorage.getItem(`euneiz_lib_res_${user?.email}`);
+    return saved ? JSON.parse(saved) : [];
   });
 
-  const isFavorite = (id) => favoriteIds.includes(id);
-
-  const toggleFavorite = (id) => {
-    setFavoriteIds((prev) => {
-      const updated = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-
-      try {
-        localStorage.setItem("favoriteIds", JSON.stringify(updated));
-      } catch (e) {
-        console.warn("No se pudo guardar favoriteIds en localStorage", e);
-      }
-
-      return updated;
-    });
-  };
-
-  // ---------- Reservar libro (máximo 3 por usuario) ----------
-
-  const handleReserve = (book) => {
-    const userEmail = user?.email || "usuario-desconocido";
-
-    // Reservas de ESTE usuario
-    const userReservations = reservations.filter(
-      (r) => r.userEmail === userEmail
-    );
-
-    if (userReservations.length >= 3) {
-      alert("Solo puedes reservar un máximo de 3 libros a la vez.");
-      return;
-    }
-
-    // Evitar reservar dos veces el mismo libro
-    if (userReservations.some((r) => r.bookId === book.id)) {
-      alert("Este libro ya lo tienes reservado.");
-      return;
-    }
-
-    const newReservation = {
-      bookId: book.id,
-      bookTitle: book.title,
-      userEmail,
-      timestamp: Date.now(), // Momento de la reserva
-    };
-
-    const updated = [...reservations, newReservation];
-    setReservations(updated);
-
-    try {
-      localStorage.setItem("reservations", JSON.stringify(updated));
-    } catch (e) {
-      console.warn("No se pudo guardar reservations en localStorage", e);
-    }
-
-    // "Enviar" email (a nivel de código)
-    sendReservationEmail({ userEmail, bookTitle: book.title });
-
-    alert("Libro reservado correctamente.");
-  };
-
-  // ---------- Carga de libros desde los CSV ----------
-
+  // --- CARGA DE DATOS ---
   useEffect(() => {
-    async function loadBooks() {
+    const loadLibraryData = async () => {
       try {
-        const [tecRes, salRes] = await Promise.all([
-          fetch("/data/tecnologias.csv"),
+        const [resSalud, resTech] = await Promise.all([
           fetch("/data/salud.csv"),
+          fetch("/data/tecnologias.csv")
         ]);
 
-        if (!tecRes.ok || !salRes.ok) {
-          console.warn(
-            "Archivos CSV no encontrados, usando datos de ejemplo."
-          );
-          const mockBooks = [
-            {
-              id: "mock-1",
-              title: "Anatomía Básica",
-              author: "Dr. Smith",
-              area: "Salud",
-              subjects: ["Medicina"],
-              summary: "Introducción sencilla a la anatomía humana.",
-              status: "disponible",
-            },
-            {
-              id: "mock-2",
-              title: "React Moderno",
-              author: "Dev Guru",
-              area: "Tecnología",
-              subjects: ["Programación", "Web"],
-              summary: "Guía práctica sobre React y hooks.",
-              status: "prestado",
-            },
-          ];
-          setBooks(mockBooks);
-          setLoading(false);
-          return;
-        }
+        const textSalud = await resSalud.text();
+        const textTech = await resTech.text();
 
-        const [tecText, salText] = await Promise.all([
-          tecRes.text(),
-          salRes.text(),
-        ]);
+        const parseCSV = (text, category) => {
+          const lines = text.split("\n").filter(l => l.trim() !== "");
+          return lines.slice(1).map((line, index) => {
+            const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            return {
+              id: `${category}-${index}`,
+              titulo: values[0]?.replace(/"/g, "").trim(),
+              autor: values[1]?.replace(/"/g, "").trim(),
+              editorial: values[2]?.replace(/"/g, "").trim(),
+              edicion: values[3]?.replace(/"/g, "").trim(),
+              año: values[4]?.replace(/"/g, "").trim(),
+              isbn: values[5]?.replace(/"/g, "").trim(),
+              titulacion: values[6]?.replace(/"/g, "").trim(),
+              materias: values[7]?.replace(/"/g, "").split(";").map(s => s.trim()).filter(Boolean),
+              signatura: values[8]?.replace(/"/g, "").trim(),
+              resumen: values[9]?.replace(/"/g, "").trim(),
+              categoria: category,
+              disponible: Math.random() > 0.3
+            };
+          });
+        };
 
-        const tecBooks = parseCsvToBooks(tecText, "Tecnología");
-        const salBooks = parseCsvToBooks(salText, "Salud");
-
-        setBooks([...tecBooks, ...salBooks]);
-        setError("");
+        setAllBooks([...parseCSV(textSalud, "Salud"), ...parseCSV(textTech, "Tecnología")]);
       } catch (err) {
-        console.error(err);
-        setError("Error cargando los datos. Revisa los CSV.");
+        console.error("Error al cargar biblioteca:", err);
       } finally {
         setLoading(false);
       }
-    }
-
-    loadBooks();
+    };
+    loadLibraryData();
   }, []);
 
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const text = query.trim().toLowerCase();
+  // --- PERSISTENCIA ---
+  useEffect(() => {
+    if (user?.email) localStorage.setItem(`euneiz_lib_favs_${user.email}`, JSON.stringify(favorites));
+  }, [favorites, user]);
 
-      if (text) {
-        const inText =
-          book.title.toLowerCase().includes(text) ||
-          book.author.toLowerCase().includes(text) ||
-          (book.summary || "").toLowerCase().includes(text) ||
-          book.area.toLowerCase().includes(text) ||
-          book.subjects.some((s) => s.toLowerCase().includes(text));
+  useEffect(() => {
+    if (user?.email) localStorage.setItem(`euneiz_lib_res_${user.email}`, JSON.stringify(reservations));
+  }, [reservations, user]);
 
-        if (!inText) return false;
-      }
+  const uniqueDegrees = useMemo(() => [...new Set(allBooks.map(b => b.titulacion).filter(Boolean))].sort(), [allBooks]);
+  const uniqueMaterials = useMemo(() => [...new Set(allBooks.flatMap(b => b.materias).filter(Boolean))].sort(), [allBooks]);
 
-      if (areaFilter !== "Todas" && book.area !== areaFilter) return false;
-      if (statusFilter !== "Todos" && book.status !== statusFilter) return false;
+  // --- FILTRADO ---
+  const displayedBooks = useMemo(() => {
+    let base = allBooks;
+    if (activeTab === "favoritos") base = allBooks.filter(b => favorites.includes(b.id));
+    if (activeTab === "reservas") base = allBooks.filter(b => reservations.some(r => r.id === b.id));
 
-      return true;
-    });
-  }, [books, query, areaFilter, statusFilter]);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      base = base.filter(b => b.titulo?.toLowerCase().includes(q) || b.autor?.toLowerCase().includes(q) || b.isbn?.toLowerCase().includes(q));
+    }
+    if (filterDegree) base = base.filter(b => b.titulacion === filterDegree);
+    if (filterMaterial) base = base.filter(b => b.materias?.includes(filterMaterial));
 
-  const handleTagClick = (tag) => {
-    const t = tag.toLowerCase();
-    setQuery((current) =>
-      current.toLowerCase() === t ? "" : tag
-    );
+    return base;
+  }, [allBooks, activeTab, favorites, reservations, searchQuery, filterDegree, filterMaterial]);
+
+  const toggleFavorite = (e, id) => {
+    e.stopPropagation();
+    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
   };
 
-  // ---------- Render ----------
+  const toggleReservation = (e, book) => {
+    e.stopPropagation();
+    const isReserved = reservations.some(r => r.id === book.id);
+    if (isReserved) {
+      setReservations(prev => prev.filter(r => r.id !== book.id));
+    } else {
+      setReservations(prev => [...prev, { id: book.id, date: new Date().toISOString() }]);
+    }
+  };
+
+  if (loading) return <div className="library-main"><h3>Accediendo a la base de datos de EUNEIZ...</h3></div>;
 
   return (
-    <div className="library-page">
-      {/* Sidebar izquierda */}
-      <aside className="library-sidebar">
-        <div>
-          <div className="sidebar-header">
-            <h1>Biblioteca</h1>
-            <p>EUNEIZ</p>
-          </div>
+    <div className="library-main">
 
-          <nav className="sidebar-menu">
-            <div className="sidebar-section-title">Menú</div>
-
-            <button
-              className="sidebar-item sidebar-item-active"
-              onClick={() => navigate("/library")}
-            >
-              📚 Todos los libros
-            </button>
-
-            <button
-              className="sidebar-item"
-              onClick={() => navigate("/favorites")}
-            >
-              ❤️ Favoritos
-            </button>
-
-            <button
-              className="sidebar-item"
-              onClick={() => navigate("/reservas")}
-            >
-              📘 Reservas
-            </button>
+      <header className="lib-dashboard-header">
+        <div className="lib-header-top">
+          <h1>Biblioteca Digital</h1>
+          <nav className="lib-nav-horizontal">
+            <button className={`lib-tab ${activeTab === "catalogo" ? "active" : ""}`} onClick={() => setActiveTab("catalogo")}>📚 Catálogo</button>
+            <button className={`lib-tab ${activeTab === "favoritos" ? "active" : ""}`} onClick={() => setActiveTab("favoritos")}>❤️ Favoritos ({favorites.length})</button>
+            <button className={`lib-tab ${activeTab === "reservas" ? "active" : ""}`} onClick={() => setActiveTab("reservas")}>🔖 Reservas ({reservations.length})</button>
           </nav>
         </div>
 
-        <div className="sidebar-footer">
-          <div className="sidebar-section-title">Áreas disponibles</div>
-          <ul>
-            <li>💊 Salud</li>
-            <li>💻 Tecnología</li>
-          </ul>
+        <div className="filters-grid">
+          <div className="filter-group">
+            <label>Buscador (Título, Autor, ISBN)</label>
+            <input type="text" className="lib-input" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          </div>
+          <div className="filter-group">
+            <label>Grado / Titulación</label>
+            <select className="lib-input" value={filterDegree} onChange={(e) => setFilterDegree(e.target.value)}>
+              <option value="">Todos</option>
+              {uniqueDegrees.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>Temática</label>
+            <select className="lib-input" value={filterMaterial} onChange={(e) => setFilterMaterial(e.target.value)}>
+              <option value="">Todas</option>
+              {uniqueMaterials.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Contenido principal */}
-      <main className="library-main">
-        <header className="library-header">
-          <div>
-            <h2>Catálogo de Libros</h2>
-            <p className="header-subtitle">
-              Busca por título, autor, materias…
-            </p>
-          </div>
+      <main className="books-display-grid">
+        {displayedBooks.map(book => {
+          const isFav = favorites.includes(book.id);
+          const isRes = reservations.some(r => r.id === book.id);
 
-          <div className="header-filters">
-            <input
-              type="text"
-              placeholder="🔍 Buscar libro..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="search-input"
-            />
-
-            <select
-              className="filter-select"
-              value={areaFilter}
-              onChange={(e) => setAreaFilter(e.target.value)}
-            >
-              <option value="Todas">Todas las áreas</option>
-              <option value="Tecnología">Tecnología</option>
-              <option value="Salud">Salud</option>
-            </select>
-
-            <select
-              className="filter-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="Todos">Estado: Todos</option>
-              <option value="disponible">Disponibles</option>
-              <option value="prestado">Prestados</option>
-            </select>
-          </div>
-        </header>
-
-        {loading && (
-          <div className="loading-spinner">Cargando biblioteca...</div>
-        )}
-        {error && !loading && (
-          <div className="error-message">{error}</div>
-        )}
-
-        {!loading && (
-          <section className="books-grid">
-            {filteredBooks.map((book) => {
-              // 👉 Comprobar si este libro está reservado por CUALQUIER usuario
-              const isBookReserved = reservations.some(
-                (r) => r.bookId === book.id
-              );
-
-              const isAvailable =
-                !isBookReserved && book.status === "disponible";
-
-              return (
-                <article key={book.id} className="book-card">
-                  <div
-                    className={
-                      "book-image " +
-                      (book.area === "Tecnología"
-                        ? "book-image-tech"
-                        : "book-image-health")
-                    }
-                  >
-                    <span>{book.area}</span>
-                  </div>
-
-                  <div className="book-content">
-                    <div className="book-header">
-                      <h3 className="book-title">{book.title}</h3>
-                      <span
-                        className={
-                          "book-status " +
-                          (isAvailable
-                            ? "book-status-available"
-                            : "book-status-borrowed")
-                        }
-                      >
-                        {isAvailable ? "Disponible" : "No disponible"}
-                      </span>
-                    </div>
-
-                    <p className="book-author">{book.author}</p>
-
-                    {book.summary && (
-                      <p className="book-summary" title={book.summary}>
-                        {book.summary.length > 80
-                          ? book.summary.substring(0, 80) + "..."
-                          : book.summary}
-                      </p>
-                    )}
-
-                    <div className="book-tags">
-                      {book.subjects.slice(0, 3).map((subject) => (
-                        <button
-                          key={subject}
-                          className="book-tag"
-                          onClick={() => handleTagClick(subject)}
-                        >
-                          {subject}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Botón favoritos */}
-                    <button
-                      className={
-                        "book-fav-btn " +
-                        (isFavorite(book.id) ? "book-fav-btn-saved" : "")
-                      }
-                      onClick={() => toggleFavorite(book.id)}
-                    >
-                      {isFavorite(book.id)
-                        ? "✔ Guardado en favoritos"
-                        : "❤️ Añadir a favoritos"}
-                    </button>
-
-                    {/* Botón reservar: SOLO si no está reservado */}
-                    {!isBookReserved && (
-                      <button
-                        className="book-reserve-btn"
-                        onClick={() => handleReserve(book)}
-                      >
-                        📘 Reservar
-                      </button>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
-
-            {!error && !loading && filteredBooks.length === 0 && (
-              <div className="empty-state">
-                No hemos encontrado libros con esos filtros.
+          return (
+            <div key={book.id} className="card-book" onClick={() => setSelectedBook(book)}>
+              <div className={`card-visual ${book.categoria === "Salud" ? "bg-area-salud" : "bg-area-tech"}`}>
+                <span className="visual-icon">{book.categoria === "Salud" ? "🩺" : "💻"}</span>
+                <span className="visual-degree">{book.titulacion || book.categoria}</span>
               </div>
-            )}
-          </section>
-        )}
+              <div className="card-body">
+                <div className="card-status">
+                  <span className={`dot-indicator ${book.disponible ? "dot-online" : "dot-offline"}`}></span>
+                  {book.disponible ? "Disponible" : "Préstamo activo"}
+                </div>
+                <h3>{book.titulo}</h3>
+                <p className="card-author">de {book.autor}</p>
+                <div className="card-metadata-info">
+                  <div className="meta-item"><b>Año:</b> {book.año}</div>
+                  <div className="meta-item"><b>Editorial:</b> {book.editorial}</div>
+                </div>
+                <div className="tag-box">
+                  {book.materias?.slice(0, 3).map(m => <span key={m} className="mini-tag">{m}</span>)}
+                </div>
+                <div className="card-actions-row" onClick={e => e.stopPropagation()}>
+                  <button className={`btn-lib btn-lib-fav ${isFav ? "active" : ""}`} onClick={(e) => toggleFavorite(e, book.id)}>
+                    {isFav ? "❤️" : "🤍"}
+                  </button>
+                  <button className={`btn-lib btn-lib-res ${isRes ? "active" : ""}`} disabled={!book.disponible && !isRes} onClick={(e) => toggleReservation(e, book)}>
+                    {isRes ? "Anular" : "Reservar"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </main>
+
+      {selectedBook && (
+        <div 
+          className="overlay-modal" 
+          onClick={(e) => {
+            // Cerramos si el clic es en el fondo oscuro
+            setSelectedBook(null);
+          }}
+        >
+          <div 
+            className="popup-ficha" 
+            onClick={e => e.stopPropagation()} // Evitamos que el clic en el modal lo cierre
+          >
+            {/* BOTÓN DE CIERRE REFORZADO */}
+            <button 
+              className="btn-close-popup" 
+              title="Cerrar ventana"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedBook(null);
+              }}
+            >
+              ✕
+            </button>
+            
+            <div className={`popup-visual-side ${selectedBook.categoria === "Salud" ? "bg-area-salud" : "bg-area-tech"}`}>
+              <span className="big-icon">{selectedBook.categoria === "Salud" ? "🩺" : "💻"}</span>
+            </div>
+            
+            <div className="popup-content-side">
+              <span className="popup-degree-label">{selectedBook.titulacion}</span>
+              <h2>{selectedBook.titulo}</h2>
+              <div className="popup-full-meta">
+                <div className="meta-block"><span>Autor/a</span><p>{selectedBook.autor}</p></div>
+                <div className="meta-block"><span>Editorial</span><p>{selectedBook.editorial}</p></div>
+                <div className="meta-block"><span>ISBN</span><p>{selectedBook.isbn}</p></div>
+                <div className="meta-block"><span>Signatura</span><p>{selectedBook.signatura}</p></div>
+              </div>
+              <div className="popup-synopsis">
+                <h4>Resumen</h4>
+                <p>{selectedBook.resumen || "No se dispone de resumen."}</p>
+              </div>
+              <div className="card-actions-row">
+                <button 
+                  className={`btn-lib btn-lib-fav ${favorites.includes(selectedBook.id) ? "active" : ""}`} 
+                  onClick={(e) => toggleFavorite(e, selectedBook.id)}
+                >
+                  {favorites.includes(selectedBook.id) ? "❤️ Quitar" : "🤍 Favorito"}
+                </button>
+                {selectedBook.disponible && (
+                  <button 
+                    className={`btn-lib btn-lib-res ${reservations.some(r => r.id === selectedBook.id) ? "active" : ""}`} 
+                    onClick={(e) => toggleReservation(e, selectedBook)}
+                  >
+                    {reservations.some(r => r.id === selectedBook.id) ? "Anular Reserva" : "Reservar"}
+                  </button>
+                )}
+              </div>
+              {reservations.some(r => r.id === selectedBook.id) && (
+                <div className="reservation-note-box">
+                  ⚠️ <b>Importante:</b> Tienes 24 horas para recoger el ejemplar en Secretaría.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Library;
-
