@@ -250,13 +250,72 @@
   background: #d1d5db;
 }
 
-/* Mensaje cuando no hay resultados */
+/* Botón favoritos en tarjeta */
+.book-fav-btn {
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.book-fav-btn:hover {
+  background: #ddd6fe;
+}
+
+.book-fav-btn-saved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Botón reservar en tarjeta */
+.book-reserve-btn {
+  margin-top: 6px;
+  border: none;
+  border-radius: 12px;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.book-reserve-btn:hover {
+  background: #bae6fd;
+}
+
+/* Tiempo de reserva */
+.book-reservation-time {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #2563eb;
+}
+
+/* Mensajes */
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
   font-size: 14px;
   color: #6b7280;
   padding: 20px 0;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 14px;
+}
+
+.error-message {
+  text-align: center;
+  padding: 12px 0;
+  color: #b91c1c;
+  font-size: 14px;
 }
 
 /* Responsive */
@@ -290,24 +349,3 @@
   }
 }
 
-/* Botón de favoritos dentro de la tarjeta */
-.book-fav-btn {
-  margin-top: 8px;
-  border: none;
-  border-radius: 12px;
-  background: #ede9fe;
-  color: #5b21b6;
-  padding: 6px 10px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.book-fav-btn:hover {
-  background: #ddd6fe;
-}
-
-.book-fav-btn-saved {
-  background: #d1fae5;
-  color: #065f46;
-}

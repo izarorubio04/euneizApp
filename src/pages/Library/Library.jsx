@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./Library.css";
-import Favorites from "./Favorites";
 
-// --- FUNCIONES AUXILIARES (parseo CSV) ---
+// ---------- Funciones auxiliares para CSV ----------
 
 function parseCSVLine(text) {
   const result = [];
@@ -26,55 +26,60 @@ function parseCSVLine(text) {
 }
 
 function parseCsvToBooks(text, area) {
-  return new Promise((resolve) => {
-    const lines = text.split("\n");
-    const headers = parseCSVLine(lines[1] || "");
-    const dataLines = lines.slice(2);
+  const lines = text.split("\n");
+  const headers = parseCSVLine(lines[1] || "");
+  const dataLines = lines.slice(2);
 
-    const books = dataLines
-      .filter((line) => line.trim() !== "")
-      .map((line, index) => {
-        const values = parseCSVLine(line);
-        const row = {};
+  return dataLines
+    .filter((line) => line.trim() !== "")
+    .map((line, index) => {
+      const values = parseCSVLine(line);
+      const row = {};
 
-        headers.forEach((header, i) => {
-          const key = header.replace(/^"|"$/g, "").trim();
-          row[key] = values[i] ? values[i].replace(/^"|"$/g, "") : "";
-        });
-
-        const title = row["Título"] || row["Titulo"] || "Sin título";
-        const author = row["Autor/a"] || "Autor desconocido";
-        const summary = row["Resumen"] || "";
-
-        const rawSubjects =
-          row["Materias/Temáticas"] ||
-          row["Materias/Tem\u00e1ticas"] ||
-          "";
-
-        const subjects = rawSubjects
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-
-        return {
-          id: `${area}-${index}`,
-          title,
-          author,
-          area,
-          subjects,
-          summary,
-          status: "disponible",
-        };
+      headers.forEach((header, i) => {
+        const key = header.replace(/^"|"$/g, "").trim();
+        row[key] = values[i] ? values[i].replace(/^"|"$/g, "") : "";
       });
 
-    resolve(books);
-  });
+      const title = row["Título"] || row["Titulo"] || "Sin título";
+      const author = row["Autor/a"] || "Autor desconocido";
+      const summary = row["Resumen"] || "";
+
+      const rawSubjects =
+        row["Materias/Temáticas"] ||
+        row["Materias/Tem\u00e1ticas"] ||
+        "";
+
+      const subjects = rawSubjects
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      return {
+        id: `${area}-${index}`,
+        title,
+        author,
+        area,
+        subjects,
+        summary,
+        status: "disponible",
+      };
+    });
 }
 
-// --- COMPONENTE PRINCIPAL ---
+// ---------- Envío de email (placeholder) ----------
+
+function sendReservationEmail({ userEmail, bookTitle }) {
+  console.log(
+    `Enviar email a eric.ruiz@euneiz.com: ${userEmail} ha reservado "${bookTitle}"`
+  );
+}
+
+// ---------- Componente principal ----------
 
 export const Library = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +89,7 @@ export const Library = () => {
   const [areaFilter, setAreaFilter] = useState("Todas");
   const [statusFilter, setStatusFilter] = useState("Todos");
 
-  // FAVORITOS -> guardamos IDs en localStorage
+  // Favoritos -> guardamos IDs de libros
   const [favoriteIds, setFavoriteIds] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("favoriteIds")) || [];
@@ -92,6 +97,17 @@ export const Library = () => {
       return [];
     }
   });
+
+  // Reservas -> guardamos objetos con info
+  const [reservations, setReservations] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("reservations")) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  const isFavorite = (id) => favoriteIds.includes(id);
 
   const toggleFavorite = (id) => {
     setFavoriteIds((prev) => {
@@ -109,7 +125,50 @@ export const Library = () => {
     });
   };
 
-  const isFavorite = (id) => favoriteIds.includes(id);
+  // ---------- Reservar libro (máximo 3 por usuario) ----------
+
+  const handleReserve = (book) => {
+    const userEmail = user?.email || "usuario-desconocido";
+
+    // Reservas de ESTE usuario
+    const userReservations = reservations.filter(
+      (r) => r.userEmail === userEmail
+    );
+
+    if (userReservations.length >= 3) {
+      alert("Solo puedes reservar un máximo de 3 libros a la vez.");
+      return;
+    }
+
+    // Evitar reservar dos veces el mismo libro
+    if (userReservations.some((r) => r.bookId === book.id)) {
+      alert("Este libro ya lo tienes reservado.");
+      return;
+    }
+
+    const newReservation = {
+      bookId: book.id,
+      bookTitle: book.title,
+      userEmail,
+      timestamp: Date.now(), // Momento de la reserva
+    };
+
+    const updated = [...reservations, newReservation];
+    setReservations(updated);
+
+    try {
+      localStorage.setItem("reservations", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("No se pudo guardar reservations en localStorage", e);
+    }
+
+    // "Enviar" email (a nivel de código)
+    sendReservationEmail({ userEmail, bookTitle: book.title });
+
+    alert("Libro reservado correctamente.");
+  };
+
+  // ---------- Carga de libros desde los CSV ----------
 
   useEffect(() => {
     async function loadBooks() {
@@ -120,7 +179,9 @@ export const Library = () => {
         ]);
 
         if (!tecRes.ok || !salRes.ok) {
-          console.warn("Archivos CSV no encontrados, usando datos de ejemplo.");
+          console.warn(
+            "Archivos CSV no encontrados, usando datos de ejemplo."
+          );
           const mockBooks = [
             {
               id: "mock-1",
@@ -151,10 +212,8 @@ export const Library = () => {
           salRes.text(),
         ]);
 
-        const [tecBooks, salBooks] = await Promise.all([
-          parseCsvToBooks(tecText, "Tecnología"),
-          parseCsvToBooks(salText, "Salud"),
-        ]);
+        const tecBooks = parseCsvToBooks(tecText, "Tecnología");
+        const salBooks = parseCsvToBooks(salText, "Salud");
 
         setBooks([...tecBooks, ...salBooks]);
         setError("");
@@ -198,6 +257,8 @@ export const Library = () => {
     );
   };
 
+  // ---------- Render ----------
+
   return (
     <div className="library-page">
       {/* Sidebar izquierda */}
@@ -213,16 +274,23 @@ export const Library = () => {
 
             <button
               className="sidebar-item sidebar-item-active"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/library")}
             >
               📚 Todos los libros
             </button>
 
             <button
               className="sidebar-item"
-              onClick={() => navigate("/Favorites")}
+              onClick={() => navigate("/favorites")}
             >
               ❤️ Favoritos
+            </button>
+
+            <button
+              className="sidebar-item"
+              onClick={() => navigate("/reservas")}
+            >
+              📘 Reservas
             </button>
           </nav>
         </div>
@@ -286,73 +354,91 @@ export const Library = () => {
 
         {!loading && (
           <section className="books-grid">
-            {filteredBooks.map((book) => (
-              <article key={book.id} className="book-card">
-                <div
-                  className={
-                    "book-image " +
-                    (book.area === "Tecnología"
-                      ? "book-image-tech"
-                      : "book-image-health")
-                  }
-                >
-                  <span>{book.area}</span>
-                </div>
+            {filteredBooks.map((book) => {
+              // 👉 Comprobar si este libro está reservado por CUALQUIER usuario
+              const isBookReserved = reservations.some(
+                (r) => r.bookId === book.id
+              );
 
-                <div className="book-content">
-                  <div className="book-header">
-                    <h3 className="book-title">{book.title}</h3>
-                    <span
-                      className={
-                        "book-status " +
-                        (book.status === "disponible"
-                          ? "book-status-available"
-                          : "book-status-borrowed")
-                      }
-                    >
-                      {book.status === "disponible"
-                        ? "Disponible"
-                        : "Prestado"}
-                    </span>
-                  </div>
+              const isAvailable =
+                !isBookReserved && book.status === "disponible";
 
-                  <p className="book-author">{book.author}</p>
-
-                  {book.summary && (
-                    <p className="book-summary" title={book.summary}>
-                      {book.summary.length > 80
-                        ? book.summary.substring(0, 80) + "..."
-                        : book.summary}
-                    </p>
-                  )}
-
-                  <div className="book-tags">
-                    {book.subjects.slice(0, 3).map((subject) => (
-                      <button
-                        key={subject}
-                        className="book-tag"
-                        onClick={() => handleTagClick(subject)}
-                      >
-                        {subject}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Botón de favoritos dentro de la tarjeta */}
-                  <button
+              return (
+                <article key={book.id} className="book-card">
+                  <div
                     className={
-                      "book-fav-btn " +
-                      (isFavorite(book.id) ? "book-fav-btn-saved" : "")
+                      "book-image " +
+                      (book.area === "Tecnología"
+                        ? "book-image-tech"
+                        : "book-image-health")
                     }
-                    onClick={() => toggleFavorite(book.id)}
                   >
-                    {isFavorite(book.id)
-                      ? "✔ Guardado en favoritos"
-                      : "❤️ Añadir a favoritos"}
-                  </button>
-                </div>
-              </article>
-            ))}
+                    <span>{book.area}</span>
+                  </div>
+
+                  <div className="book-content">
+                    <div className="book-header">
+                      <h3 className="book-title">{book.title}</h3>
+                      <span
+                        className={
+                          "book-status " +
+                          (isAvailable
+                            ? "book-status-available"
+                            : "book-status-borrowed")
+                        }
+                      >
+                        {isAvailable ? "Disponible" : "No disponible"}
+                      </span>
+                    </div>
+
+                    <p className="book-author">{book.author}</p>
+
+                    {book.summary && (
+                      <p className="book-summary" title={book.summary}>
+                        {book.summary.length > 80
+                          ? book.summary.substring(0, 80) + "..."
+                          : book.summary}
+                      </p>
+                    )}
+
+                    <div className="book-tags">
+                      {book.subjects.slice(0, 3).map((subject) => (
+                        <button
+                          key={subject}
+                          className="book-tag"
+                          onClick={() => handleTagClick(subject)}
+                        >
+                          {subject}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Botón favoritos */}
+                    <button
+                      className={
+                        "book-fav-btn " +
+                        (isFavorite(book.id) ? "book-fav-btn-saved" : "")
+                      }
+                      onClick={() => toggleFavorite(book.id)}
+                    >
+                      {isFavorite(book.id)
+                        ? "✔ Guardado en favoritos"
+                        : "❤️ Añadir a favoritos"}
+                    </button>
+
+                    {/* Botón reservar: SOLO si no está reservado */}
+                    {!isBookReserved && (
+                      <button
+                        className="book-reserve-btn"
+                        onClick={() => handleReserve(book)}
+                      >
+                        📘 Reservar
+                      </button>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
 
             {!error && !loading && filteredBooks.length === 0 && (
               <div className="empty-state">
@@ -367,3 +453,4 @@ export const Library = () => {
 };
 
 export default Library;
+
