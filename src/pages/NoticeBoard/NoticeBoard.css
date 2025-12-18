@@ -1,6 +1,391 @@
-.notice-container {
-  padding: 20px;
-  background-color: #d1ecf1;
-  height: 100vh;
+/* --- CONTENEDOR PRINCIPAL --- */
+.notice-board-page {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #f9f9f9, #c0fdfb);
+  color: #333;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 80px; /* Espacio para el botón flotante */
+}
+
+/* --- HEADER Y FILTROS --- */
+.notice-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 30px 20px;
+  background: linear-gradient(90deg, #ff7eb9, #ff758c);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-bottom: 1px solid #eee;
+  border-radius: 0 0 20px 20px;
   text-align: center;
 }
+
+.notice-header h1 {
+  margin: 0 0 15px 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.filtros-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.filter-input {
+  padding: 12px 15px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.filter-search {
+  flex: 2;
+  min-width: 200px;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 150px;
+}
+
+.filtros-fecha {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 15px;
+  border-radius: 12px;
+}
+
+.filtros-fecha label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* --- GRID DEL TABLERO --- */
+.board-grid {
+  padding: 40px 20px;
+  display: grid;
+  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+/* --- TARJETAS (CARDS) --- */
+.notice-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón Fijar */
+.btn-fijar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-fijar.fijado {
+  background: #fff;
+  color: #ffa502;
+  box-shadow: 0 0 8px #ffa502;
+  transform: scale(1.1);
+}
+
+/* Media */
+.card-media {
+  width: 100%;
+  height: 200px;
+  background: #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.play-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: white;
+  opacity: 0.8;
+}
+
+/* Cuerpo de la tarjeta */
+.card-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tag {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  align-self: flex-start;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.tag-evento { background: #ff6b6b; }
+.tag-venta { background: #1dd1a1; }
+.tag-curso { background: #54a0ff; }
+.tag-varios { background: #f368e0; }
+
+.notice-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.25rem;
+  color: #222;
+}
+
+.card-desc {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 15px;
+  flex: 1; /* Empuja los botones abajo */
+}
+
+/* Acciones de la tarjeta */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  transition: opacity 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-contactar { background: #ff9f43; }
+.btn-editar { background: #2e86de; }
+.btn-eliminar { background: #ee5253; }
+
+.action-btn:hover { opacity: 0.9; }
+
+/* --- FORMULARIO (CREAR/EDITAR) --- */
+.form-container {
+  width: 90%;
+  max-width: 600px;
+  margin: 40px auto;
+  background: white;
+  padding: 30px 25px;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #444;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background: #fafafa;
+}
+
+.form-input:focus {
+  border-color: #ff6b6b;
+  background: white;
+  outline: none;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 5px;
+}
+
+.preview-box {
+  background: #fff6f6;
+  border: 1px dashed #ff6b6b;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.preview-media {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.btn-submit {
+  flex: 2;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #e0e0e0;
+  color: #666;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* --- MODALES --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  text-align: center;
+  animation: scaleUp 0.3s;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close-icon {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+  border: none;
+  background: none;
+}
+
+.modal-media-display {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+/* --- BOTÓN FLOTANTE --- */
+.btn-flotante {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  color: white;
+  font-size: 36px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+  z-index: 900;
+}
+
+.btn-flotante:hover {
+  background: #ee5253;
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { transform: scale(0.8); } to { transform: scale(1); } }
