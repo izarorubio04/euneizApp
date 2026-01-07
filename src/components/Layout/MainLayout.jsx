@@ -60,6 +60,12 @@ export const MainLayout = () => {
             🧠 Psicología
         </NavLink>
 
+        <NavLink
+          to="/comunidad/proyectos"
+          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
+            🧩 Proyectos de Alumnos
+        </NavLink>
+
           <p className="nav-section">SERVICIOS</p>
           <NavLink to="/library" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             📚 Biblioteca

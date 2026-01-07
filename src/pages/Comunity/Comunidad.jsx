@@ -19,6 +19,12 @@ export default function Comunidad() {
           <button className="main-menu-btn">Competiciones</button>
         </Link>
 
+        <Link to="/comunidad/proyectos">
+          <button className="main-menu-btn">
+            Proyectos de alumnos
+          </button>
+        </Link> 
+
       <Link to="/psicologia">
         <button className="main-menu-btn">
         Psicología y orientación al alumnado

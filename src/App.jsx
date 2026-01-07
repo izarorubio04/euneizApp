@@ -30,6 +30,7 @@ import Competiciones from "./pages/Comunity/Competiciones/Competiciones";
 import CompeticionDetalle from "./pages/Comunity/Competiciones/CompeticionDetalle";
 import FaseFinal from "./pages/Comunity/Competiciones/FaseFinal";
 import Estadisticas from "./pages/Comunity/Competiciones/Estadisticas";
+import Proyectos from "../src/pages/Comunity/Proyectos/proyectos";
 
 // Psicología
 import Psicologia from "./pages/Comunity/Psicologia/Psicologia";
@@ -107,6 +108,9 @@ function App() {
 
           {/* PSICOLOGÍA */}
           <Route path="/comunidad/psicologia" element={<Psicologia />} />
+          
+          {/* PROYECTOS */}
+          <Route path="/comunidad/proyectos" element={<Proyectos />} />
 
           {/* ───── ALIAS / RUTAS ANTIGUAS (NO TOCAR) ───── */}
           <Route path="/clubs" element={<Navigate to="/comunidad/clubs" replace />} />
