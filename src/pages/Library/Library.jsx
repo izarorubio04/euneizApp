@@ -243,8 +243,12 @@ export const Library = () => {
         if (!inText) return false;
       }
 
-      if (areaFilter !== "Todas" && book.area !== areaFilter) return false;
-      if (statusFilter !== "Todos" && book.status !== statusFilter) return false;
+      const isBookReserved = reservations.some((r) => r.bookId === book.id);
+
+// Filtro por estado (según reservas)
+if (statusFilter === "disponible" && isBookReserved) return false;
+if (statusFilter === "reservado" && !isBookReserved) return false;
+
 
       return true;
     });
