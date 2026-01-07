@@ -90,16 +90,17 @@ export const Reservations = () => {
       return [];
     }
   });
+
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
 
-  // Actualizar "ahora" cada minuto para refrescar el contador
+  // refrescar contador cada minuto
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 60 * 1000);
     return () => clearInterval(id);
   }, []);
 
-  // Cargar libros
+  // cargar libros
   useEffect(() => {
     async function loadBooks() {
       try {
@@ -154,7 +155,24 @@ export const Reservations = () => {
     loadBooks();
   }, []);
 
-  // Libros reservados por el usuario actual
+  // ✅ devolver libro: borra la reserva de ESTE usuario para ese libro
+  const handleReturn = (bookId) => {
+    const userEmail = user?.email || "usuario-desconocido";
+
+    const updated = reservations.filter(
+      (r) => !(r.userEmail === userEmail && r.bookId === bookId)
+    );
+
+    setReservations(updated);
+
+    try {
+      localStorage.setItem("reservations", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("No se pudo guardar reservations en localStorage", e);
+    }
+  };
+
+  // libros reservados por el usuario actual
   const reservedBooks = useMemo(() => {
     const userEmail = user?.email || "usuario-desconocido";
 
@@ -238,9 +256,7 @@ export const Reservations = () => {
         )}
 
         {!loading && reservedBooks.length === 0 && (
-          <div className="empty-state">
-            No tienes libros reservados.
-          </div>
+          <div className="empty-state">No tienes libros reservados.</div>
         )}
 
         <section className="books-grid">
@@ -280,6 +296,14 @@ export const Reservations = () => {
                 <p className="book-author">
                   Reservado por: <strong>{book.userEmail}</strong>
                 </p>
+
+                {/* ✅ Botón DEVOLVER */}
+                <button
+                  className="book-fav-btn book-fav-btn-saved"
+                  onClick={() => handleReturn(book.id)}
+                >
+                  ✅ Devolver
+                </button>
               </div>
             </article>
           ))}
@@ -290,3 +314,4 @@ export const Reservations = () => {
 };
 
 export default Reservations;
+
