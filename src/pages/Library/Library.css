@@ -129,6 +129,45 @@
     box-shadow: 0 20px 40px rgba(0, 48, 73, 0.1);
   }
 
+    /* Estilo para la tarjeta cuando está ocupada */
+  .card-book.is-taken {
+    opacity: 0.75;
+    filter: grayscale(0.4);
+    cursor: not-allowed;
+  }
+
+  /* Etiqueta flotante sobre la imagen del libro */
+.badge-status-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 2;
+}
+
+.badge-status-overlay.mine {
+  background: #4e8df5; /* Azul si es tuyo */
+}
+
+/* Botón cuando el libro está ocupado por otro */
+.btn-lib-res.disabled-res {
+  background-color: #cbd5e1 !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+
+/* Tarjeta si es tuya */
+.card-book.is-mine {
+  border: 2px solid #4e8df5;
+  background: #f0f7ff;
+}
+
   .card-visual {
     height: 140px;
     display: flex;

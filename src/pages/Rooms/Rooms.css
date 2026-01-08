@@ -1,0 +1,125 @@
+.rooms-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: "Inter", sans-serif;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.rooms-header {
+  background: white;
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  margin-bottom: 2rem;
+}
+
+.rooms-header h1 {
+  color: #003049;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.rooms-filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.rooms-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rooms-field label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.rooms-input {
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: 2px solid #f1f5f9;
+  background: #f8fafc;
+  outline: none;
+}
+
+.rooms-input:focus {
+  border-color: #4e8df5;
+}
+
+/* Grid de Salas */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.room-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.room-card:hover { transform: translateY(-5px); }
+.room-card.is-reserved { border-color: #ff6b6b; }
+
+.room-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.room-body { padding: 1.5rem; }
+
+/* Bloques de reserva */
+.reservation-block {
+  background: #f1f5f9;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
+  font-size: 0.9rem;
+}
+
+.reservation-block.editing {
+  background: #fffbe6;
+  border: 1px solid #f59e0b;
+}
+
+.res-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.btn-res {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.btn-res-cancel { background: #fee2e2; color: #991b1b; }
+.btn-res-edit { background: #fef3c7; color: #92400e; }
+.btn-reserve-main {
+  width: 100%;
+  background: #003049;
+  color: white;
+  padding: 0.8rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.btn-reserve-main:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
