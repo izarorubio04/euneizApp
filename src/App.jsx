@@ -35,6 +35,9 @@ import Proyectos from "../src/pages/Comunity/Proyectos/proyectos";
 // Psicología
 import Psicologia from "./pages/Comunity/Psicologia/Psicologia";
 
+// Reserva Aulas
+import { Rooms } from "./pages/Rooms/Rooms";
+
 // ─────────────────────────────────────────────
 // PROTECTED ROUTE
 // ─────────────────────────────────────────────
@@ -87,6 +90,7 @@ function App() {
           <Route path="/library" element={<Library />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/reservas" element={<Reservations />} />
+          <Route path="/rooms" element={<Rooms />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
 
           {/* COMUNIDAD (HUB) */}
