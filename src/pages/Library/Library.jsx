@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
 import { db } from "../../firebase/config";
 import { 
   collection, 
@@ -34,6 +35,7 @@ import IconHealth from "../../assets/icon-health.svg";
 
 export const Library = () => {
   const { user } = useAuth();
+  const location = useLocation(); // Hook para leer la info de navegación
   
   // --- ESTADOS ---
   const [allBooks, setAllBooks] = useState([]);
@@ -47,6 +49,14 @@ export const Library = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [userFavorites, setUserFavorites] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
+
+  // --- EFECTO PARA CAMBIAR PESTAÑA AUTOMÁTICAMENTE ---
+  useEffect(() => {
+    // Si la navegación trae un estado "view", lo aplicamos
+    if (location.state && location.state.view) {
+      setActiveTab(location.state.view);
+    }
+  }, [location]);
 
   // --- CARGA DE DATOS (FIREBASE) ---
   useEffect(() => {

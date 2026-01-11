@@ -47,9 +47,6 @@ export const MainLayout = () => {
           <NavLink to="/calendar" className="nav-item">
             <Calendar size={20} /> <span>Calendario</span>
           </NavLink>
-          <NavLink to="/inbox" className="nav-item">
-            <Mail size={20} /> <span>Mensajes</span>
-          </NavLink>
 
           <p className="nav-section">COMUNIDAD</p>
           {/* CAMBIO: Un solo enlace para Comunidades y Clubs */}

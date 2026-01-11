@@ -60,7 +60,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
-          <Route path="/inbox" element={<Inbox />} />
+          <Route path="/home/inbox" element={<Inbox />} />
           <Route path="/calendar" element={<Calendar />} />
 
           {/* --- BLOQUE COMUNIDAD --- */}
