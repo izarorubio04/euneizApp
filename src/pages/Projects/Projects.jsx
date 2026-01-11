@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../../context/AuthContext";
-import { db } from "../../../firebase/config";
+import { useAuth } from "../../context/AuthContext";
+import { db } from "../../firebase/config";
 import { 
   collection, 
   addDoc, 
@@ -11,7 +11,7 @@ import {
   query, 
   orderBy 
 } from "firebase/firestore";
-import "./Proyectos.css";
+import "./Projects.css";
 
 // ICONOS LUCIDE (Estilo unificado)
 import { 

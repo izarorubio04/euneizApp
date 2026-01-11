@@ -16,6 +16,7 @@ import { Favorites } from "./pages/Library/Favorites";
 import { Reservations } from "./pages/Library/Reservations";
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard";
 import Inbox from "./pages/Inbox/Inbox";
+import Calendar from "./pages/Calendar/Calendar";
 
 // Comunidad
 import Comunidad from "./pages/Comunity/Comunidad";
@@ -31,7 +32,7 @@ import Competiciones from "./pages/Competiciones/Competiciones";
 import CompeticionDetalle from "./pages/Competiciones/CompeticionDetalle";
 import FaseFinal from "./pages/Competiciones/FaseFinal";
 import Estadisticas from "./pages/Competiciones/Estadisticas";
-import Proyectos from "./pages/Comunity/Proyectos/Proyectos";
+import Proyectos from "./pages/Projects/Projects";
 
 // Psicología
 import Psicologia from "./pages/Psicologia/Psicologia";
@@ -94,6 +95,7 @@ function App() {
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
           <Route path="/inbox" element={<Inbox />} />
+          <Route path="/calendar" element={<Calendar />} />
 
           {/* COMUNIDAD (HUB) */}
           <Route path="/comunidad" element={<Comunidad />} />
