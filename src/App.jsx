@@ -1,4 +1,3 @@
-// src/App.jsx
 import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -11,38 +10,29 @@ import { MainLayout } from "./components/Layout/MainLayout";
 // Páginas principales
 import { Home } from "./pages/Home/Home";
 import { Profile } from "./pages/Profile/Profile";
-import { Library } from "./pages/Library/Library";
-import { Favorites } from "./pages/Library/Favorites";
-import { Reservations } from "./pages/Library/Reservations";
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard";
 import Inbox from "./pages/Inbox/Inbox";
 import Calendar from "./pages/Calendar/Calendar";
 
-// Comunidad
-import Comunidad from "./pages/Comunity/Comunidad";
-import ListaComunidades from "./pages/Comunity/Comunidades/ListaComunidades";
-import CrearComunidad from "./pages/Comunity/Comunidades/CrearComunidad";
+// Servicios / Biblioteca / Aulas
+import { Library } from "./pages/Library/Library";
+import { Favorites } from "./pages/Library/Favorites";
+import { Reservations } from "./pages/Library/Reservations";
+import { Rooms } from "./pages/Rooms/Rooms";
+import Psicologia from "./pages/Psicologia/Psicologia";
 
-// Clubs
-import ListaClubs from "./pages/Comunity/Clubs/ListaClubs";
-import ClubDetalle from "./pages/Comunity/Clubs/ClubDetalle";
+// --- SECCIÓN COMUNIDAD ---
+import Comunidad from "./pages/Comunity/Comunidad"; // La nueva página con Tabs
+import ClubDetalle from "./pages/Comunity/Clubs/ClubDetalle"; // Detalle sigue siendo necesario
+import Proyectos from "./pages/Projects/Projects";
 
 // Competiciones
 import Competiciones from "./pages/Competiciones/Competiciones";
 import CompeticionDetalle from "./pages/Competiciones/CompeticionDetalle";
 import FaseFinal from "./pages/Competiciones/FaseFinal";
 import Estadisticas from "./pages/Competiciones/Estadisticas";
-import Proyectos from "./pages/Projects/Projects";
 
-// Psicología
-import Psicologia from "./pages/Psicologia/Psicologia";
-
-// Reserva Aulas
-import { Rooms } from "./pages/Rooms/Rooms";
-
-// ─────────────────────────────────────────────
 // PROTECTED ROUTE
-// ─────────────────────────────────────────────
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Cargando...</div>;
@@ -50,27 +40,12 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// ─────────────────────────────────────────────
-// REDIRECCIONES (ALIAS PARA RUTAS ANTIGUAS)
-// ─────────────────────────────────────────────
-const RedirectClubDetalle = () => {
-  const { id } = useParams();
-  return <Navigate to={`/comunidad/clubs/${id}`} replace />;
-};
-
-const RedirectCompeticionDetalle = () => {
-  const { id } = useParams();
-  return <Navigate to={`/comunidad/competiciones/${id}`} replace />;
-};
-
+// REDIRECCIONES ÚTILES
 const RedirectCompeticionSub = ({ subpath }) => {
   const { id } = useParams();
   return <Navigate to={`/comunidad/competiciones/${id}/${subpath}`} replace />;
 };
 
-// ─────────────────────────────────────────────
-// APP
-// ─────────────────────────────────────────────
 function App() {
   return (
     <AuthProvider>
@@ -78,69 +53,44 @@ function App() {
         {/* RUTA PÚBLICA */}
         <Route path="/" element={<Login />} />
 
-        {/* RUTAS PRIVADAS CON LAYOUT */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }
-        >
+        {/* RUTAS PRIVADAS */}
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+          
           {/* PRINCIPAL */}
           <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/reservas" element={<Reservations />} />
-          <Route path="/rooms" element={<Rooms />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/calendar" element={<Calendar />} />
 
-          {/* COMUNIDAD (HUB) */}
-          <Route path="/comunidad" element={<Comunidad />} />
+          {/* --- BLOQUE COMUNIDAD --- */}
+          {/* Esta es la página principal (Hub) con las pestañas */}
+          <Route path="/comunidad/comunidades" element={<Comunidad />} />
 
-          {/* COMUNIDADES DE ESTUDIANTES */}
-          <Route path="/comunidad/comunidades" element={<ListaComunidades />} />
-          <Route path="/comunidad/comunidades/crear" element={<CrearComunidad />} />
-
-          {/* CLUBS */}
-          <Route path="/comunidad/clubs" element={<ListaClubs />} />
-          <Route path="/comunidad/clubs/:id" element={<ClubDetalle />} />
-
-          {/* COMPETICIONES */}
+          {/* Sub-páginas de Comunidad */}
+          <Route path="/comunidad/comunidades/clubs/:id" element={<ClubDetalle />} />
+          <Route path="/comunidad/proyectos" element={<Proyectos />} />
+          
+          {/* Competiciones */}
           <Route path="/comunidad/competiciones" element={<Competiciones />} />
           <Route path="/comunidad/competiciones/:id" element={<CompeticionDetalle />} />
           <Route path="/comunidad/competiciones/:id/fase-final" element={<FaseFinal />} />
           <Route path="/comunidad/competiciones/:id/estadisticas" element={<Estadisticas />} />
 
-          {/* PSICOLOGÍA */}
+          {/* --- BLOQUE SERVICIOS --- */}
+          <Route path="/library" element={<Library />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/reservas" element={<Reservations />} />
+          <Route path="/rooms" element={<Rooms />} />
           <Route path="/comunidad/psicologia" element={<Psicologia />} />
-          
-          {/* PROYECTOS */}
-          <Route path="/comunidad/proyectos" element={<Proyectos />} />
 
-          {/* ───── ALIAS / RUTAS ANTIGUAS (NO TOCAR) ───── */}
-          <Route path="/clubs" element={<Navigate to="/comunidad/clubs" replace />} />
-          <Route path="/clubs/:id" element={<RedirectClubDetalle />} />
+          {/* ALIAS DE COMPATIBILIDAD (Opcionales, por si tenías enlaces viejos) */}
+          <Route path="/clubs/:id" element={<Navigate to="/comunidad/clubs/:id" replace />} />
+          <Route path="/competiciones/*" element={<Navigate to="/comunidad/competiciones" replace />} />
 
-          <Route path="/competiciones" element={<Navigate to="/comunidad/competiciones" replace />} />
-          <Route path="/competiciones/:id" element={<RedirectCompeticionDetalle />} />
-          <Route
-            path="/competiciones/:id/fase-final"
-            element={<RedirectCompeticionSub subpath="fase-final" />}
-          />
-          <Route
-            path="/competiciones/:id/estadisticas"
-            element={<RedirectCompeticionSub subpath="estadisticas" />}
-          />
-
-          <Route path="/psicologia" element={<Navigate to="/comunidad/psicologia" replace />} />
-          <Route path="/comunidad/lista" element={<Navigate to="/comunidad/comunidades" replace />} />
-          <Route path="/comunidad/crear" element={<Navigate to="/comunidad/comunidades/crear" replace />} />
-
-          {/* FALLBACK */}
+          {/* 404 - FALLBACK */}
           <Route path="*" element={<Navigate to="/home" replace />} />
+        
         </Route>
       </Routes>
     </AuthProvider>
