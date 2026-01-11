@@ -10,10 +10,27 @@ import {
   deleteDoc, 
   where,
   writeBatch,
-  setDoc,
-  addDoc
+  setDoc
 } from "firebase/firestore";
 import "./Library.css";
+
+// 1. IMPORTAR ICONOS DE INTERFAZ (Lucide)
+import { 
+  Search, 
+  Filter, 
+  BookOpen, 
+  Heart, 
+  Bookmark, 
+  X, 
+  Info,
+  Library as LibraryIcon,
+  ChevronDown
+} from "lucide-react";
+
+// 2. IMPORTAR TUS ICONOS PERSONALIZADOS
+// Asegúrate de que la ruta coincida con donde guardaste los archivos
+import IconTech from "../../assets/icon-tech.svg"; 
+import IconHealth from "../../assets/icon-health.svg";
 
 export const Library = () => {
   const { user } = useAuth();
@@ -31,7 +48,7 @@ export const Library = () => {
   const [userFavorites, setUserFavorites] = useState([]);
   const [userReservations, setUserReservations] = useState([]);
 
-  // --- 1. CARGA EN TIEMPO REAL (FIREBASE) ---
+  // --- CARGA DE DATOS (FIREBASE) ---
   useEffect(() => {
     const q = query(collection(db, "libros"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -52,7 +69,7 @@ export const Library = () => {
     return () => { unsubFavs(); unsubRes(); };
   }, [user]);
 
-  // --- 2. RECUPERACIÓN DE FILTROS DINÁMICOS ---
+  // --- FILTROS ---
   const uniqueDegrees = useMemo(() => 
     [...new Set(allBooks.map(b => b.titulacion).filter(Boolean))].sort(), 
   [allBooks]);
@@ -80,7 +97,7 @@ export const Library = () => {
     return base;
   }, [allBooks, activeTab, userFavorites, userReservations, searchQuery, filterDegree, filterMaterial]);
 
-  // --- 3. ACCIONES DE FIREBASE ---
+  // --- ACCIONES ---
   const toggleFavorite = async (e, bookId) => {
     e.stopPropagation();
     const favId = `${user.email}_${bookId}`;
@@ -104,145 +121,121 @@ export const Library = () => {
     }
   };
 
-  // --- 4. MIGRACIÓN COMPLETA (SUBE TODO EL CONTENIDO DEL CSV) ---
+  // Función de migración (Omitida por brevedad, mantenla si la necesitas)
 
-  const migrateCSVToFirebase = async () => {
-    if (!window.confirm("¿Migrar todos los libros? Se recomienda borrar la colección antes si ya lo hiciste.")) return;
-    setLoading(true);
-    
-    try {
-      const [resSalud, resTech] = await Promise.all([
-        fetch("/data/salud.csv"),
-        fetch("/data/tecnologias.csv")
-      ]);
-      const textSalud = await resSalud.text();
-      const textTech = await resTech.text();
-
-      const parseAndBatch = async (text, category) => {
-        const rows = text.split("\n").filter(l => l.trim() !== "").slice(1);
-        
-        // Firestore permite grupos de 500 operaciones por batch
-        let batch = writeBatch(db);
-        let count = 0;
-
-        for (const line of rows) {
-          const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-          if (values.length < 2) continue;
-
-          const newBookRef = doc(collection(db, "libros")); // Crea una referencia con ID automático
-          
-          batch.set(newBookRef, {
-            titulo: values[0]?.replace(/"/g, "").trim() || "Sin título",
-            autor: values[1]?.replace(/"/g, "").trim() || "Anónimo",
-            editorial: values[2]?.replace(/"/g, "").trim() || "",
-            edicion: values[3]?.replace(/"/g, "").trim() || "",
-            año: values[4]?.replace(/"/g, "").trim() || "",
-            isbn: values[5]?.replace(/"/g, "").trim() || "",
-            titulacion: values[6]?.replace(/"/g, "").trim() || category,
-            materias: values[7]?.replace(/"/g, "").split(";").map(s => s.trim()).filter(Boolean),
-            resumen: values[9]?.replace(/"/g, "").trim() || "",
-            categoria: category,
-            disponible: true
-          });
-
-          count++;
-
-          // Si llegamos a 450, enviamos el lote y empezamos uno nuevo (por seguridad)
-          if (count >= 450) {
-            await batch.commit();
-            batch = writeBatch(db);
-            count = 0;
-          }
-        }
-        // Enviar el resto
-        if (count > 0) await batch.commit();
-      };
-
-      await parseAndBatch(textSalud, "Salud");
-      await parseAndBatch(textTech, "Tecnología");
-
-      alert("¡Éxito! Catálogo completo subido sin errores.");
-    } catch (err) {
-      console.error(err);
-      alert("Error al migrar: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <div className="library-main"><h3>Sincronizando biblioteca EUNEIZ...</h3></div>;
+  if (loading) return <div className="lib-loading">Sincronizando biblioteca...</div>;
 
   return (
-    <div className="library-main">
-      <header className="lib-dashboard-header">
-        <div className="lib-header-top">
+    <div className="library-container">
+      
+      {/* HEADER FLOTANTE */}
+      <header className="lib-header">
+        <div className="lib-header-content">
           <h1>Biblioteca Digital</h1>
-          <nav className="lib-nav-horizontal">
-            <button className={`lib-tab ${activeTab === "catalogo" ? "active" : ""}`} onClick={() => setActiveTab("catalogo")}>📚 Catálogo ({allBooks.length})</button>
-            <button className={`lib-tab ${activeTab === "favoritos" ? "active" : ""}`} onClick={() => setActiveTab("favoritos")}>❤️ Favoritos ({userFavorites.length})</button>
-            <button className={`lib-tab ${activeTab === "reservas" ? "active" : ""}`} onClick={() => setActiveTab("reservas")}>🔖 Reservas ({userReservations.length})</button>
+          <p>Consulta, reserva y gestiona tus préstamos académicos</p>
+          
+          <nav className="lib-tabs">
+            <button className={`lib-tab-btn ${activeTab === "catalogo" ? "active" : ""}`} onClick={() => setActiveTab("catalogo")}>
+              <BookOpen size={18} /> Catálogo
+            </button>
+            <button className={`lib-tab-btn ${activeTab === "favoritos" ? "active" : ""}`} onClick={() => setActiveTab("favoritos")}>
+              <Heart size={18} /> Favoritos
+            </button>
+            <button className={`lib-tab-btn ${activeTab === "reservas" ? "active" : ""}`} onClick={() => setActiveTab("reservas")}>
+              <Bookmark size={18} /> Mis Reservas
+            </button>
           </nav>
         </div>
+      </header>
 
-        {/* --- RECUPERACIÓN DE LA CUADRÍCULA DE FILTROS --- */}
-        <div className="filters-grid">
-          <div className="filter-group">
-            <label>Buscador (Título, Autor, ISBN)</label>
-            <input type="text" className="lib-input" placeholder="Buscar..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-          </div>
-          <div className="filter-group">
-            <label>Grado / Titulación</label>
-            <select className="lib-input" value={filterDegree} onChange={(e) => setFilterDegree(e.target.value)}>
+      {/* BARRA DE FILTROS REPARADA */}
+      <div className="lib-filters-bar">
+        <div className="search-box">
+          <Search size={18} className="search-icon"/>
+          <input 
+            type="text" 
+            placeholder="Buscar por título, autor..." 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+          />
+        </div>
+        
+        <div className="filters-row">
+          <div className="filter-select-wrapper">
+            <Filter size={16} className="filter-icon" />
+            <select value={filterDegree} onChange={(e) => setFilterDegree(e.target.value)}>
               <option value="">Todos los grados</option>
               {uniqueDegrees.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
+            {/* Flecha manual para indicar dropdown */}
+            <ChevronDown size={14} className="select-arrow" />
           </div>
-          <div className="filter-group">
-            <label>Temática</label>
-            <select className="lib-input" value={filterMaterial} onChange={(e) => setFilterMaterial(e.target.value)}>
+          
+          <div className="filter-select-wrapper">
+            <LibraryIcon size={16} className="filter-icon" />
+            <select value={filterMaterial} onChange={(e) => setFilterMaterial(e.target.value)}>
               <option value="">Todas las temáticas</option>
               {uniqueMaterials.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
+            {/* Flecha manual para indicar dropdown */}
+            <ChevronDown size={14} className="select-arrow" />
           </div>
         </div>
-        
-        {allBooks.length < 5 && (
-          <button onClick={migrateCSVToFirebase} className="btn-lib" style={{marginTop: '1rem', background: '#003049', color: 'white'}}>
-            🚀 Importar Catálogo desde CSV
-          </button>
-        )}
-      </header>
+      </div>
 
-      <main className="books-display-grid">
+      {/* GRID DE LIBROS */}
+      <main className="books-grid">
         {displayedBooks.map(book => {
           const isMyRes = userReservations.includes(book.id);
           const isTaken = !book.disponible && !isMyRes;
+          // Determinamos qué icono usar
+          const CustomIcon = book.categoria === "Salud" ? IconHealth : IconTech;
+          
           return (
-            <div key={book.id} className={`card-book ${isTaken ? "is-taken" : ""} ${isMyRes ? "is-mine" : ""}`} onClick={() => setSelectedBook(book)}>
-              <div className={`card-visual ${book.categoria === "Salud" ? "bg-area-salud" : "bg-area-tech"}`}>
-                <span className="visual-icon">{book.categoria === "Salud" ? "🩺" : "💻"}</span>
+            <div 
+              key={book.id} 
+              className={`book-card ${isTaken ? "is-taken" : ""} ${isMyRes ? "is-mine" : ""}`} 
+              onClick={() => setSelectedBook(book)}
+            >
+              {/* CABECERA VISUAL CON TUS ICONOS */}
+              <div className={`book-visual ${book.categoria === "Salud" ? "visual-health" : "visual-tech"}`}>
+                <img src={CustomIcon} alt={book.categoria} className="custom-book-icon" />
                 <span className="visual-degree">{book.titulacion}</span>
-                {isTaken && <div className="badge-status-overlay">OCUPADO</div>}
-                {isMyRes && <div className="badge-status-overlay mine">TUYO</div>}
+                
+                {isTaken && <div className="status-badge occupied">OCUPADO</div>}
+                {isMyRes && <div className="status-badge mine">TUYO</div>}
               </div>
-              <div className="card-body">
-                <div className="card-status">
-                  <span className={`dot-indicator ${book.disponible ? "dot-online" : "dot-offline"}`}></span>
-                  <span style={{color: book.disponible ? '#10b981' : '#ef4444', fontWeight:'700'}}>
-                    {isMyRes ? "Reservado por ti" : (book.disponible ? "Disponible" : "En préstamo")}
+
+              <div className="book-body">
+                <div className="book-status-row">
+                  <span className={`status-dot ${book.disponible ? "online" : "offline"}`}></span>
+                  <span className="status-text">
+                    {isMyRes ? "Reservado por ti" : (book.disponible ? "Disponible" : "Prestado")}
                   </span>
                 </div>
-                <h3>{book.titulo}</h3>
-                <p className="card-author">de {book.autor}</p>
-                <div className="tag-box">
-                   {book.materias?.slice(0,2).map(m => <span key={m} className="mini-tag">{m}</span>)}
+
+                <h3 className="book-title">{book.titulo}</h3>
+                <p className="book-author">de {book.autor}</p>
+                
+                <div className="book-tags">
+                   {book.materias?.slice(0,2).map(m => <span key={m} className="tag-pill">{m}</span>)}
                 </div>
-                <div className="card-actions-row" onClick={e => e.stopPropagation()}>
-                  <button className={`btn-lib btn-lib-fav ${userFavorites.includes(book.id) ? "active" : ""}`} onClick={(e) => toggleFavorite(e, book.id)}>
-                    {userFavorites.includes(book.id) ? "❤️" : "🤍"}
+
+                <div className="book-actions" onClick={e => e.stopPropagation()}>
+                  <button 
+                    className={`action-btn fav-btn ${userFavorites.includes(book.id) ? "active" : ""}`} 
+                    onClick={(e) => toggleFavorite(e, book.id)}
+                    title="Añadir a favoritos"
+                  >
+                    <Heart size={20} fill={userFavorites.includes(book.id) ? "#F1595C" : "none"} />
                   </button>
-                  <button className={`btn-lib btn-lib-res ${isMyRes ? "active" : ""}`} disabled={isTaken} onClick={(e) => handleReservation(e, book)}>
-                    {isMyRes ? "Anular" : (isTaken ? "Ocupado" : "Reservar")}
+                  
+                  <button 
+                    className={`action-btn res-btn ${isMyRes ? "cancel" : "reserve"}`} 
+                    disabled={isTaken} 
+                    onClick={(e) => handleReservation(e, book)}
+                  >
+                    {isMyRes ? "Devolver" : (isTaken ? "No disponible" : "Reservar")}
                   </button>
                 </div>
               </div>
@@ -251,26 +244,37 @@ export const Library = () => {
         })}
       </main>
 
-      {/* --- MODAL DETALLE --- */}
+      {/* MODAL DETALLE */}
       {selectedBook && (
-        <div className="overlay-modal" onClick={() => setSelectedBook(null)}>
-          <div className="popup-ficha" onClick={e => e.stopPropagation()}>
-            <button className="btn-close-popup" onClick={() => setSelectedBook(null)}>✕</button>
-            <div className={`popup-visual-side ${selectedBook.categoria === "Salud" ? "bg-area-salud" : "bg-area-tech"}`}>
-               <span className="big-icon">{selectedBook.categoria === "Salud" ? "🩺" : "💻"}</span>
+        <div className="modal-overlay" onClick={() => setSelectedBook(null)}>
+          <div className="modal-book-content" onClick={e => e.stopPropagation()}>
+            <button className="btn-close-modal" onClick={() => setSelectedBook(null)}>
+              <X size={24} />
+            </button>
+            
+            <div className={`modal-visual-side ${selectedBook.categoria === "Salud" ? "visual-health" : "visual-tech"}`}>
+               {/* Usamos el icono también en el modal */}
+               <img 
+                 src={selectedBook.categoria === "Salud" ? IconHealth : IconTech} 
+                 alt="Category Icon" 
+                 className="modal-icon-large"
+               />
             </div>
-            <div className="popup-content-side">
-              <span className="popup-degree-label">{selectedBook.titulacion}</span>
+            
+            <div className="modal-info-side">
+              <span className="modal-degree">{selectedBook.titulacion}</span>
               <h2>{selectedBook.titulo}</h2>
-              <div className="popup-full-meta">
-                <div className="meta-block"><span>Autor</span><p>{selectedBook.autor}</p></div>
-                <div className="meta-block"><span>Editorial</span><p>{selectedBook.editorial}</p></div>
-                <div className="meta-block"><span>ISBN</span><p>{selectedBook.isbn}</p></div>
-                <div className="meta-block"><span>Año</span><p>{selectedBook.año}</p></div>
+              
+              <div className="modal-meta-grid">
+                <div className="meta-item"><span>Autor</span><p>{selectedBook.autor}</p></div>
+                <div className="meta-item"><span>Editorial</span><p>{selectedBook.editorial}</p></div>
+                <div className="meta-item"><span>ISBN</span><p>{selectedBook.isbn}</p></div>
+                <div className="meta-item"><span>Año</span><p>{selectedBook.año}</p></div>
               </div>
-              <div className="popup-synopsis">
-                <h4>Resumen</h4>
-                <p>{selectedBook.resumen || "No hay resumen disponible."}</p>
+
+              <div className="modal-synopsis">
+                <h4><Info size={18}/> Resumen</h4>
+                <p>{selectedBook.resumen || "No hay resumen disponible para este libro."}</p>
               </div>
             </div>
           </div>
