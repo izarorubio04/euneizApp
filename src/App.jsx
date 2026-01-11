@@ -31,7 +31,7 @@ import Competiciones from "./pages/Comunity/Competiciones/Competiciones";
 import CompeticionDetalle from "./pages/Comunity/Competiciones/CompeticionDetalle";
 import FaseFinal from "./pages/Comunity/Competiciones/FaseFinal";
 import Estadisticas from "./pages/Comunity/Competiciones/Estadisticas";
-import Proyectos from "../src/pages/Comunity/Proyectos/proyectos";
+import Proyectos from "./pages/Comunity/Proyectos/Proyectos";
 
 // Psicología
 import Psicologia from "./pages/Psicologia/Psicologia";
