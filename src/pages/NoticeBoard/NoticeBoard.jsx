@@ -27,7 +27,8 @@ import {
   Pin,
   MessageCircle,
   Trash2,
-  CheckCircle
+  CheckCircle,
+  Calendar as CalIcon
 } from "lucide-react";
 
 // Actualizamos el objeto CATEGORIES con componentes en lugar de emojis
@@ -69,7 +70,7 @@ export const NoticeBoard = () => {
   });
 
   const [formData, setFormData] = useState({
-    type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: ""
+    type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: ""
   });
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export const NoticeBoard = () => {
         desc: formData.desc,
         author: user?.email || "Anónimo",
         date: Date.now(),
+        eventDate: formData.eventDate || null, // Fecha del evento real (para el calendario)
         status: initialStatus,
         meta: {
           price: formData.price,
@@ -117,8 +119,8 @@ export const NoticeBoard = () => {
       });
 
       setIsModalOpen(false);
-      setFormData({ type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "" });
-      
+      setFormData({ type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: "" });      
+
       if (initialStatus === "pending") {
         alert("✅ Anuncio enviado a moderación.");
       }
@@ -259,6 +261,21 @@ export const NoticeBoard = () => {
                 </div>
               </div>
               <div className="form-group"><label>Título</label><input name="title" value={formData.title} onChange={handleInputChange} required placeholder="Ej: Vendo apuntes de anatomía..." /></div>
+              
+              {(formData.type === "eventos" || formData.type === "social") && (
+                <div className="form-group">
+                  <label>Fecha del Evento <span style={{color:'red'}}>*</span></label>
+                  <input 
+                    type="date" 
+                    name="eventDate" 
+                    value={formData.eventDate} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="date-input"
+                  />
+                </div>
+              )}
+
               {(formData.type === "venta" || formData.type === "vivienda") && <div className="form-group"><label>Precio (€)</label><input name="price" type="number" value={formData.price} onChange={handleInputChange} placeholder="0" /></div>}
               {formData.type === "carpooling" && <div className="form-row"><input name="origin" placeholder="📍 Origen" value={formData.origin} onChange={handleInputChange} /><input name="dest" placeholder="🏁 Destino" value={formData.dest} onChange={handleInputChange} /></div>}
               <div className="form-group"><label>Descripción</label><textarea name="desc" value={formData.desc} onChange={handleInputChange} rows={3} required placeholder="Detalla tu anuncio..."></textarea></div>
@@ -322,6 +339,14 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
         </div>
 
         <h3 className="card-title">{post.title}</h3>
+
+        {/* Mostramos fecha del evento si existe */}
+        {post.eventDate && (
+          <div className="event-date-display" style={{color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '5px'}}>
+             <CalIcon size={14}/> 
+             <strong>Fecha:</strong> {new Date(post.eventDate).toLocaleDateString()}
+          </div>
+        )}
         
         {/* METADATA ESPECÍFICA */}
         {post.type === "carpooling" && post.meta && (

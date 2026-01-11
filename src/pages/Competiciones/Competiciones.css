@@ -1,0 +1,136 @@
+:root {
+  --primary: #000B3D;
+  --accent: #F1595C;
+  --text-main: #1e293b;
+  --text-light: #64748b;
+  --bg-card: #ffffff;
+  --bg-soft: #f8fafc;
+}
+
+.comp-container {
+  padding-bottom: 100px;
+  animation: fadeIn 0.4s ease-out;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+}
+
+/* === HEADER & DEMO === */
+.comp-header { margin-bottom: 2rem; }
+.comp-header h1 { color: var(--primary); font-size: 2rem; margin: 0; }
+.comp-header p { color: var(--text-light); margin-top: 0.5rem; }
+
+.demo-banner {
+  background: #fffbeb; border: 1px solid #fcd34d; color: #b45309;
+  padding: 1rem; border-radius: 12px; display: flex; gap: 12px; margin-bottom: 2rem;
+}
+.demo-content strong { display: block; margin-bottom: 4px; color: #92400e; }
+.demo-content p { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+
+/* === TARJETA DE COMPETICIÓN (Componente) === */
+.comp-card {
+  background: var(--bg-card); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04);
+  transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;
+}
+.comp-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+
+.comp-card-header {
+  height: 100px; background: linear-gradient(135deg, var(--primary) 0%, #0f172a 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.sport-icon-circle {
+  width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: white; backdrop-filter: blur(4px);
+}
+
+.comp-card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+.comp-title { margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--primary); font-weight: 700; }
+.comp-meta { font-size: 0.85rem; color: var(--text-light); display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.comp-desc { font-size: 0.95rem; color: var(--text-light); line-height: 1.5; margin-bottom: 1.5rem; flex-grow: 1; }
+
+.btn-view-comp {
+  width: 100%; background: transparent; color: var(--primary); border: 1px solid var(--primary);
+  padding: 0.8rem; border-radius: 10px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
+}
+.btn-view-comp:hover { background: var(--primary); color: white; }
+
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+
+/* === TOPBAR DETALLES & TABS === */
+.detail-topbar {
+  background: white; padding: 2rem; border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;
+}
+.detail-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.detail-header-row h1 { font-size: 1.8rem; color: var(--primary); margin: 0; }
+.detail-subtitle { color: var(--text-light); margin-top: 0.5rem; }
+
+.comp-tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; overflow-x: auto; }
+.comp-tab-btn {
+  padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: transparent;
+  color: var(--text-light); font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.comp-tab-btn:hover { background: #f1f5f9; color: var(--primary); }
+.comp-tab-btn.active { background: rgba(0, 11, 61, 0.1); color: var(--primary); font-weight: 800; }
+
+/* === TABLAS Y PARTIDOS === */
+.table-card {
+  background: white; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 2rem;
+}
+.table-header { padding: 1rem 1.5rem; background: var(--primary); color: white; display: flex; align-items: center; gap: 10px; }
+.table-header h3 { margin: 0; font-size: 1.1rem; }
+
+.standings-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.standings-table th { text-align: left; padding: 1rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); border-bottom: 2px solid #f1f5f9; }
+.standings-table td { padding: 1rem; border-bottom: 1px solid #f1f5f9; color: var(--text-main); font-size: 0.9rem; }
+.col-pts { font-weight: 800; color: var(--primary); background: #f8fafc; text-align: center; }
+
+/* Match Card (Fase Final) */
+.match-card {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.5rem; border-bottom: 1px solid #f1f5f9;
+}
+.match-card:last-child { border-bottom: none; }
+.team-side { flex: 1; display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text-main); }
+.team-side.right { justify-content: flex-end; text-align: right; }
+.score-box {
+  background: var(--bg-soft); padding: 5px 15px; border-radius: 8px;
+  font-weight: 800; color: var(--primary); font-size: 1.1rem; letter-spacing: 2px;
+}
+.match-status { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; display: block; text-align: center; }
+
+/* Estadísticas */
+.stats-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.stat-table-card .table-header h3 {
+  font-size: 1rem;
+}
+.bracket-title {
+  padding: 1rem 1.5rem 0.5rem;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.stat-box {
+  background: white; padding: 1.5rem; border-radius: 16px; text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04);
+}
+.stat-avatar {
+  width: 60px; height: 60px; background: #e0f2fe; border-radius: 50%; margin: 0 auto 1rem;
+  display: grid; place-items: center; color: var(--primary); font-weight: 800; font-size: 1.2rem;
+}
+.stat-value { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 0.5rem 0; }
+.stat-label { color: var(--text-light); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.btn-back { margin-top: 2rem; background: transparent; border: none; color: var(--text-light); display: flex; gap: 8px; cursor: pointer; font-weight: 600; }
+.btn-back:hover { color: var(--accent); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

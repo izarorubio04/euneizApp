@@ -8,14 +8,13 @@ import {
   Calendar, 
   Mail, 
   Users, 
-  Tent, 
   Trophy, 
-  BrainCircuit, 
   Lightbulb, 
   Library, 
   Key, 
-  LogOut 
-} from "lucide-react"; // Importamos los iconos elegantes
+  LogOut,
+  BrainCircuit
+} from "lucide-react"; 
 import "./MainLayout.css";
 
 export const MainLayout = () => {
@@ -29,7 +28,6 @@ export const MainLayout = () => {
 
   return (
     <div className="layout-container">
-      {/* --- SIDEBAR FLOTANTE --- */}
       <aside className="sidebar">
         <div className="sidebar-header">
           <div className="logo-container">
@@ -46,21 +44,16 @@ export const MainLayout = () => {
           <NavLink to="/notice-board" className="nav-item">
             <LayoutDashboard size={20} /> <span>Tablón</span>
           </NavLink>
-          {/* Calendario (placeholder) */}
           <NavLink to="/calendar" className="nav-item">
             <Calendar size={20} /> <span>Calendario</span>
           </NavLink>
-          <NavLink to="/inbox" className="nav-item">
-            <Mail size={20} /> <span>Mensajes</span>
-          </NavLink>
 
           <p className="nav-section">COMUNIDAD</p>
+          {/* CAMBIO: Un solo enlace para Comunidades y Clubs */}
           <NavLink to="/comunidad/comunidades" className="nav-item">
             <Users size={20} /> <span>Comunidades</span>
           </NavLink>
-          <NavLink to="/comunidad/clubs" className="nav-item">
-            <Tent size={20} /> <span>Clubs</span>
-          </NavLink>
+          
           <NavLink to="/comunidad/competiciones" className="nav-item">
             <Trophy size={20} /> <span>Competiciones</span>
           </NavLink>
@@ -80,7 +73,6 @@ export const MainLayout = () => {
           </NavLink>
         </nav>
 
-        {/* FOOTER DEL USUARIO */}
         <div className="sidebar-footer">
           <NavLink to="/profile" className="user-info-card">
             <div className="avatar-circle">
@@ -98,7 +90,6 @@ export const MainLayout = () => {
         </div>
       </aside>
 
-      {/* --- ÁREA DE CONTENIDO --- */}
       <main className="content-area">
         <div className="content-wrapper">
           <Outlet />
