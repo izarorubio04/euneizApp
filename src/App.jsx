@@ -27,10 +27,10 @@ import ListaClubs from "./pages/Comunity/Clubs/ListaClubs";
 import ClubDetalle from "./pages/Comunity/Clubs/ClubDetalle";
 
 // Competiciones
-import Competiciones from "./pages/Comunity/Competiciones/Competiciones";
-import CompeticionDetalle from "./pages/Comunity/Competiciones/CompeticionDetalle";
-import FaseFinal from "./pages/Comunity/Competiciones/FaseFinal";
-import Estadisticas from "./pages/Comunity/Competiciones/Estadisticas";
+import Competiciones from "./pages/Competiciones/Competiciones";
+import CompeticionDetalle from "./pages/Competiciones/CompeticionDetalle";
+import FaseFinal from "./pages/Competiciones/FaseFinal";
+import Estadisticas from "./pages/Competiciones/Estadisticas";
 import Proyectos from "./pages/Comunity/Proyectos/Proyectos";
 
 // Psicología
