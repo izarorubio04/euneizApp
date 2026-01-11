@@ -64,9 +64,6 @@ export const MainLayout = () => {
           <NavLink to="/comunidad/competiciones" className="nav-item">
             <Trophy size={20} /> <span>Competiciones</span>
           </NavLink>
-          <NavLink to="/comunidad/psicologia" className="nav-item">
-            <BrainCircuit size={20} /> <span>Psicología</span>
-          </NavLink>
           <NavLink to="/comunidad/proyectos" className="nav-item">
             <Lightbulb size={20} /> <span>Proyectos</span>
           </NavLink>
@@ -77,6 +74,9 @@ export const MainLayout = () => {
           </NavLink>
           <NavLink to="/rooms" className="nav-item">
             <Key size={20} /> <span>Aulas</span>
+          </NavLink>
+          <NavLink to="/comunidad/psicologia" className="nav-item">
+            <BrainCircuit size={20} /> <span>Psicología</span>
           </NavLink>
         </nav>
 

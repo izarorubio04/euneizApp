@@ -34,7 +34,7 @@ import Estadisticas from "./pages/Comunity/Competiciones/Estadisticas";
 import Proyectos from "../src/pages/Comunity/Proyectos/proyectos";
 
 // Psicología
-import Psicologia from "./pages/Comunity/Psicologia/Psicologia";
+import Psicologia from "./pages/Psicologia/Psicologia";
 
 // Reserva Aulas
 import { Rooms } from "./pages/Rooms/Rooms";

@@ -1,336 +1,289 @@
-/* =========================================
-   VARIABLES Y CONFIGURACIÓN GLOBAL
-   ========================================= */
+/* src/pages/NoticeBoard/NoticeBoard.css */
+
 :root {
-  --primary: #003049;
-  --text-dark: #1e293b;
-  --text-light: #64748b;
-  --bg-page: #f8fafc;
-  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-hover: 0 20px 30px -5px rgba(0, 0, 0, 0.1);
-  --radius-card: 20px;
-  --radius-btn: 12px;
+  --primary: #000B3D;    /* Azul oscuro corporativo */
+  --accent: #F1595C;     /* Rojo/Coral EUNEIZ */
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --bg-card: #ffffff;
 }
 
 .nb-container {
-  min-height: 100vh;
-  background-color: var(--bg-page);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Eliminamos background-color fijo para que use el gris del MainLayout */
+  /* min-height: 100vh; <-- Quitamos esto, dejamos que el layout maneje la altura */
   padding-bottom: 100px;
+  font-family: 'Inter', sans-serif;
+  animation: fadeIn 0.4s ease-out;
 }
 
-/* =========================================
-   HEADER & FILTROS
-   ========================================= */
+/* ================= HEADER FLOTANTE ================= */
 .nb-header {
-  background: white;
-  padding: 2rem 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+  /* El header ya no es una franja blanca que corta la página */
+  background: transparent; 
+  text-align: left;
 }
 
 .nb-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: center;
+  max-width: 100%;
 }
 
 .nb-header h1 {
   color: var(--primary);
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.5px;
 }
 
 .nb-header p {
-  color: var(--text-light);
+  color: var(--text-muted);
   margin-top: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.badge-admin {
-  background-color: #e74c3c;
-  color: white;
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 6px;
-  vertical-align: middle;
-  margin-left: 8px;
-  text-transform: uppercase;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
-/* --- BARRA DE FILTROS --- */
+/* ================= FILTROS (Estilo Menú Sidebar) ================= */
 .nb-filters {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 0.8rem;
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
 }
 
 .filter-pill {
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(0, 11, 61, 0.1);
   background: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-light);
+  font-size: 0.85rem;
+  color: var(--text-muted);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+/* Hover en grises como solicitaste */
 .filter-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background-color: #f1f5f9;
+  color: var(--primary);
   border-color: #cbd5e1;
+  transform: translateY(-1px);
 }
 
-/* Estado Activo: Usa la variable --cat-color inyectada por JS */
+/* Estado Activo: Azul Corporativo */
 .filter-pill.active {
-  background-color: var(--primary); /* Fallback */
-  background-color: var(--cat-color, var(--primary)); 
+  background-color: var(--primary);
   color: white;
-  border-color: transparent;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 11, 61, 0.15);
 }
 
-/* =========================================
-   GRID PRINCIPAL
-   ========================================= */
+/* Ajuste del icono dentro del filtro */
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* ================= GRID DE TARJETAS ================= */
 .nb-grid {
-  max-width: 1200px;
-  margin: 2.5rem auto;
-  padding: 0 1.5rem;
-}
-
-.nb-section-pinned {
-  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .nb-section-pinned h3 {
-  color: #e74c3c;
-  font-size: 1.2rem;
-  border-bottom: 2px solid #fadbd8;
-  padding-bottom: 0.8rem;
-  margin-bottom: 1.5rem;
-  display: inline-block;
+  color: var(--accent); /* Usamos el rojo EUNEIZ para destacar */
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
 }
 
 .pinned-grid, .feed-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
-/* =========================================
-   TARJETAS (DISEÑO UNIFICADO)
-   ========================================= */
+/* ================= TARJETAS OPTIMIZADAS ================= */
 .notice-card {
-  /* Variables locales por defecto (se sobreescriben abajo) */
-  --accent-color: #cbd5e1;
-  --bg-tint: #ffffff;
-  
-  background: linear-gradient(160deg, var(--bg-tint) 0%, #ffffff 80%);
-  border-radius: var(--radius-card);
-  padding: 1.5rem;
+  background: var(--bg-card);
+  border-radius: 16px; /* Coincide con el sidebar */
   position: relative;
-  border: 1px solid white; /* Borde sutil */
-  border-top: 5px solid var(--accent-color); /* Borde superior de color */
-  box-shadow: var(--shadow-card);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
 }
 
 .notice-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* --- CLASES ESPECÍFICAS DE CATEGORÍA (Define colores aquí) --- */
-.card-secretaria { --accent-color: #e74c3c; --bg-tint: #fff5f5; }
-.card-eventos    { --accent-color: #3498db; --bg-tint: #f0f7ff; }
-.card-social     { --accent-color: #e84393; --bg-tint: #fff0f6; }
-.card-carpooling { --accent-color: #2ecc71; --bg-tint: #f0fdf4; }
-.card-vivienda   { --accent-color: #00cec9; --bg-tint: #e0fbfb; }
-.card-venta      { --accent-color: #9b59b6; --bg-tint: #f8f0fc; }
-.card-perdidos   { --accent-color: #f39c12; --bg-tint: #fffaf0; }
-.card-otros      { --accent-color: #636e72; --bg-tint: #f8f9fa; }
+/* Tira de color superior (Acento sutil de categoría) */
+.card-accent-strip {
+  height: 4px;
+  background-color: var(--accent-color, var(--text-muted));
+  width: 100%;
+}
 
+.card-body-wrapper {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
 
-/* --- CONTENIDO DE LA TARJETA --- */
+/* Badge Superior */
 .card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.2rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
 .card-badge {
-  background-color: var(--accent-color); /* Usa el color de la tarjeta */
-  color: white;
-  padding: 5px 12px;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
 }
 
+/* Botón Pin */
 .btn-pin {
   background: none;
   border: none;
-  font-size: 1.6rem;
   cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
   color: #cbd5e1;
-  transition: all 0.2s;
-  padding: 0;
-  line-height: 0;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
 }
+.btn-pin:hover { background: #f8fafc; color: #f1c40f; }
+.btn-pin.active { color: #f1c40f; }
 
-.btn-pin:hover { color: #f1c40f; transform: scale(1.2); }
-.btn-pin.active { color: #f1c40f; text-shadow: 0 2px 10px rgba(241, 196, 15, 0.4); }
-
-.card-content h3 {
-  margin: 0 0 0.8rem 0;
-  font-size: 1.25rem;
-  color: var(--text-dark);
-  line-height: 1.3;
+/* Contenido */
+.card-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-main);
+  line-height: 1.4;
   font-weight: 700;
 }
 
 .card-desc {
-  color: var(--text-light);
-  font-size: 0.95rem;
-  line-height: 1.6;
-  flex-grow: 1; /* Empuja el footer hacia abajo */
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+  white-space: pre-line;
 }
 
-/* Detalles Específicos */
+/* Detalles específicos (Venta / Carpooling) */
 .price-tag {
   display: inline-block;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  color: var(--accent-color);
   margin-bottom: 1rem;
 }
 
 .carpool-route {
-  background: rgba(255,255,255,0.8);
-  padding: 12px;
-  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: 8px;
   margin-bottom: 1rem;
-  border: 1px solid rgba(0,0,0,0.05);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
-.route-point {
-  display: flex; align-items: center; gap: 8px; font-weight: 600; color: #1e293b; font-size: 0.9rem;
-}
-.route-line {
-  height: 16px; border-left: 2px dashed #cbd5e1; margin-left: 5px; opacity: 0.5;
-}
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot.origin { background: #22c55e; }
-.dot.dest { background: #ef4444; }
+.route-arrow { color: var(--text-muted); }
 
 /* Footer de Tarjeta */
-.card-meta-footer {
-  margin-top: 1.5rem;
+.card-footer {
   padding-top: 1rem;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+}
+
+.author-info {
+  font-size: 0.75rem;
   color: #94a3b8;
+  font-weight: 500;
 }
 
-.contact-pill {
-  background: #ffffff;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-  color: var(--text-dark);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  border: 1px solid #f1f5f9;
-}
-
-/* =========================================
-   ESTADOS DE MODERACIÓN
-   ========================================= */
-.pending-card {
-  border-top-style: dashed;
-  filter: grayscale(0.2);
-}
-.pending-card .card-content { opacity: 0.5; }
-
-.pending-overlay {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%) rotate(-10deg);
-  border: 4px solid #f59e0b;
-  color: #f59e0b;
-  font-size: 1.8rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  padding: 0.8rem 1.5rem;
-  border-radius: 16px;
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 10;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
-}
-
-.admin-actions {
+.card-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
-  z-index: 20;
+  gap: 6px;
 }
-.admin-actions button {
-  flex: 1;
+
+.icon-btn {
+  border: none;
+  background: transparent;
   padding: 6px;
   border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
   cursor: pointer;
-  border: none;
-  transition: transform 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
 }
-.admin-actions button:hover { transform: translateY(-2px); }
-.btn-approve { background: #dcfce7; color: #166534; }
-.btn-delete { background: #fee2e2; color: #991b1b; }
 
-/* =========================================
-   BOTÓN FLOTANTE Y MODAL
-   ========================================= */
+.icon-btn:hover { background: #f1f5f9; color: var(--primary); }
+.icon-btn.approve:hover { background: #dcfce7; color: #166534; }
+.icon-btn.delete:hover { background: #fee2e2; color: #991b1b; }
+.icon-btn.contact { background: rgba(0, 11, 61, 0.05); color: var(--primary); }
+.icon-btn.contact:hover { background: var(--primary); color: white; }
+
+/* Pendiente */
+.pending-card { opacity: 0.7; border-style: dashed; }
+.pending-overlay {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: #f59e0b; color: white; padding: 5px 10px; border-radius: 6px;
+  font-size: 0.8rem; font-weight: 700; pointer-events: none;
+}
+
+/* ================= BOTÓN FLOTANTE (FAB) ================= */
 .fab-add {
   position: fixed;
   bottom: 2rem; right: 2rem;
-  width: 64px; height: 64px;
+  width: 56px; height: 56px;
   border-radius: 50%;
-  background: var(--primary);
+  background: var(--accent); /* Usamos el rojo EUNEIZ */
   color: white;
-  font-size: 2.2rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 15px 35px rgba(0, 48, 73, 0.3);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 5px 12px rgba(241, 89, 92, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: grid; place-items: center;
   z-index: 100;
-  display: grid; place-items: center; padding-bottom: 6px; /* Ajuste óptico del + */
 }
-.fab-add:hover { transform: scale(1.1) rotate(90deg); background: var(--accent); }
+.fab-add:hover { transform: scale(1.1); box-shadow: 0 7px 14px rgba(241, 89, 92, 0.5); }
 
+/* ================= MODALES ================= */
 .modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 11, 61, 0.6); /* Azul oscuro con transparencia */
+  backdrop-filter: blur(4px);
   display: grid; place-items: center;
   z-index: 2000;
   animation: fadeIn 0.2s ease-out;
@@ -338,66 +291,60 @@
 
 .modal-content {
   background: white;
-  width: 90%; max-width: 550px;
-  max-height: 85vh; /* SCROLL FIX */
-  overflow-y: auto;
-  padding: 2.5rem;
-  border-radius: 24px;
+  width: 90%; max-width: 500px;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   position: relative;
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
 
-/* Formulario Modal */
-.form-group label {
-  display: block; margin-bottom: 0.6rem;
-  font-weight: 700; color: var(--text-dark);
-  font-size: 0.9rem;
+.modal-content h2 {
+  color: var(--primary);
+  margin-top: 0;
+  font-size: 1.5rem;
 }
-
-.form-group input, .form-group textarea {
-  width: 100%; padding: 0.9rem;
-  border-radius: 10px; border: 2px solid #f1f5f9;
-  background: #f8fafc; font-family: inherit; font-size: 0.95rem;
-  transition: all 0.2s;
-}
-.form-group input:focus, .form-group textarea:focus {
-  outline: none; border-color: var(--accent); background: white;
-}
-
-.cat-selector { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.cat-radio {
-  cursor: pointer; padding: 0.5rem 1rem;
-  border-radius: 12px; border: 1px solid #e2e8f0;
-  background: white; font-size: 0.85rem; font-weight: 500;
-  display: flex; align-items: center; gap: 6px;
-  transition: all 0.2s;
-}
-.cat-radio:hover { border-color: #cbd5e1; }
-.cat-radio.selected {
-  background: var(--primary); color: white; border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 48, 73, 0.2);
-}
-.cat-radio input { display: none; }
-
-.btn-publish {
-  background: var(--primary); color: white;
-  border: none; padding: 1rem; width: 100%;
-  border-radius: 12px; font-weight: 700; font-size: 1rem;
-  margin-top: 1rem; cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-publish:hover { background: var(--accent); }
 
 .btn-close-modal {
   position: absolute; top: 1.5rem; right: 1.5rem;
-  background: #f1f5f9; border: none; width: 36px; height: 36px;
-  border-radius: 50%; font-size: 1.2rem; color: var(--text-light);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;
+}
+.btn-close-modal:hover { color: var(--accent); }
+
+.post-form .form-group { margin-bottom: 1rem; }
+.post-form label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-main); }
+.post-form input, .post-form textarea {
+  width: 100%; padding: 0.8rem; border-radius: 10px;
+  border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit;
+  transition: border 0.2s;
+}
+.post-form input:focus, .post-form textarea:focus { outline: none; border-color: var(--primary); background: white; }
+
+.cat-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.cat-radio {
+  padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0;
+  cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;
   transition: all 0.2s;
 }
-.btn-close-modal:hover { background: #e2e8f0; color: #ef4444; }
+.cat-radio input { display: none; }
+.radio-icon { color: var(--text-muted); }
 
-.empty-feed { text-align: center; padding: 4rem 1rem; color: #94a3b8; grid-column: 1 / -1; }
-.empty-feed span { font-size: 4rem; display: block; margin-bottom: 1rem; opacity: 0.5; }
+/* Selección de categoría en modal */
+.cat-radio.selected {
+  background-color: rgba(0, 11, 61, 0.05); /* Gris/Azul muy suave */
+  border-color: var(--cat-color);
+  color: var(--primary);
+  font-weight: 700;
+}
+.cat-radio.selected .radio-icon { color: var(--cat-color); }
+
+.btn-publish {
+  width: 100%; padding: 0.9rem;
+  background: var(--primary); color: white;
+  border: none; border-radius: 12px; font-weight: 700; font-size: 1rem;
+  cursor: pointer; margin-top: 1rem;
+  transition: background 0.2s;
+}
+.btn-publish:hover { background: #1e3a8a; } /* Un azul un poco más claro */
+.btn-publish:disabled { background: #94a3b8; cursor: not-allowed; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
