@@ -34,6 +34,10 @@ export const MainLayout = () => {
             📅 Calendario
           </NavLink>
 
+          <NavLink to="/inbox" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            📬 Mensajes
+          </NavLink>
+
           <p className="nav-section">COMUNIDAD</p>
 
           <NavLink

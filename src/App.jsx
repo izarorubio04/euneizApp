@@ -15,6 +15,7 @@ import { Library } from "./pages/Library/Library";
 import { Favorites } from "./pages/Library/Favorites";
 import { Reservations } from "./pages/Library/Reservations";
 import { NoticeBoard } from "./pages/NoticeBoard/NoticeBoard";
+import Inbox from "./pages/Inbox/Inbox";
 
 // Comunidad
 import Comunidad from "./pages/Comunity/Comunidad";
@@ -92,6 +93,7 @@ function App() {
           <Route path="/reservas" element={<Reservations />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/notice-board" element={<NoticeBoard />} />
+          <Route path="/inbox" element={<Inbox />} />
 
           {/* COMUNIDAD (HUB) */}
           <Route path="/comunidad" element={<Comunidad />} />
