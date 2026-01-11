@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./NoticeBoard.css";
 import { useAuth } from "../../context/AuthContext";
-import { db } from "../../firebase/config"; // Importamos la DB
+import { db } from "../../firebase/config";
 import { 
   collection, 
   addDoc, 
@@ -10,37 +10,34 @@ import {
   doc, 
   onSnapshot, 
   query, 
-  orderBy,
-  serverTimestamp 
+  orderBy 
 } from "firebase/firestore";
 
-// --- CONFIGURACIÓN ---
+// --- CONFIGURACIÓN DE CATEGORÍAS (Define colores y metadatos) ---
 const CATEGORIES = {
   secretaria: { label: "Avisos Secretaría", icon: "📢", color: "#e74c3c", adminOnly: true },
   eventos:    { label: "Eventos Uni",       icon: "🎉", color: "#3498db", adminOnly: false },
+  social:     { label: "Social / Quedadas", icon: "🍻", color: "#e84393", adminOnly: false },
   carpooling: { label: "Carpooling",        icon: "🚗", color: "#2ecc71", adminOnly: false },
-  perdidos:   { label: "Objetos Perdidos",  icon: "🔍", color: "#f39c12", adminOnly: false },
+  vivienda:   { label: "Vivienda",          icon: "🏠", color: "#00cec9", adminOnly: false },
   venta:      { label: "Compra-Venta",      icon: "💸", color: "#9b59b6", adminOnly: false },
+  perdidos:   { label: "Objetos Perdidos",  icon: "🔍", color: "#f39c12", adminOnly: false },
+  otros:      { label: "Otros",             icon: "📦", color: "#636e72", adminOnly: false },
 };
 
-// --- SEGURIDAD: DEFINIR QUIÉN ES ADMIN ---
-// En una app real esto iría en la base de datos (roles), pero para este proyecto,
-// una lista blanca es segura y funcional.
 const ADMIN_EMAILS = ["admin@euneiz.com", "secretaria@euneiz.com"];
 
 export const NoticeBoard = () => {
   const { user } = useAuth();
-  
-  // Verifica si el usuario actual es admin
   const isUserAdmin = user && ADMIN_EMAILS.includes(user.email);
 
   // --- ESTADOS ---
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); 
+  const [filter, setFilter] = useState("all"); // 'all', 'mine', o clave de categoría
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Fijado Local (Preferencia de usuario)
+  // Estado local para anuncios fijados
   const [pinnedIds, setPinnedIds] = useState(() => {
     try {
       const saved = localStorage.getItem("my_pinned_notices");
@@ -48,40 +45,28 @@ export const NoticeBoard = () => {
     } catch { return []; }
   });
 
-  // Formulario
   const [formData, setFormData] = useState({
     type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: ""
   });
 
-  // --- 1. CONEXIÓN A FIREBASE (REAL-TIME) ---
+  // --- EFECTOS ---
   useEffect(() => {
-    // Escuchamos la colección "notices" ordenadas por fecha
     const q = query(collection(db, "notices"), orderBy("date", "desc"));
-    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setPosts(docs);
+      setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // --- 2. GESTIÓN DE PINS (LOCAL STORAGE) ---
   useEffect(() => {
     localStorage.setItem("my_pinned_notices", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
 
+  // --- ACCIONES ---
   const togglePin = (id) => {
-    setPinnedIds(prev => 
-      prev.includes(id) ? prev.filter(p => p !== id) : [id, ...prev]
-    );
+    setPinnedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [id, ...prev]);
   };
-
-  // --- 3. ACCIONES FIREBASE ---
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -92,7 +77,6 @@ export const NoticeBoard = () => {
     if (!formData.title || !formData.desc) return alert("Rellena los campos obligatorios");
 
     try {
-      // Los avisos de secretaría se auto-aprueban si eres admin
       const isSecretaria = formData.type === "secretaria";
       const initialStatus = (isUserAdmin || isSecretaria) ? "approved" : "pending";
 
@@ -101,7 +85,7 @@ export const NoticeBoard = () => {
         title: formData.title,
         desc: formData.desc,
         author: user?.email || "Anónimo",
-        date: Date.now(), // Usamos timestamp numérico para facilitar orden
+        date: Date.now(),
         status: initialStatus,
         meta: {
           price: formData.price,
@@ -115,9 +99,8 @@ export const NoticeBoard = () => {
       setFormData({ type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "" });
       
       if (initialStatus === "pending") {
-        alert("✅ Anuncio enviado a moderación. Espera a que secretaría lo valide.");
+        alert("✅ Anuncio enviado a moderación. Puedes verlo en la sección 'Mis Anuncios'.");
       }
-
     } catch (error) {
       console.error("Error al publicar:", error);
       alert("Error al conectar con el servidor.");
@@ -125,7 +108,7 @@ export const NoticeBoard = () => {
   };
 
   const deletePost = async (id) => {
-    if(!window.confirm("¿Seguro que quieres eliminar este anuncio de la base de datos?")) return;
+    if(!window.confirm("¿Borrar este anuncio permanentemente?")) return;
     await deleteDoc(doc(db, "notices", id));
   };
 
@@ -134,31 +117,50 @@ export const NoticeBoard = () => {
   };
 
   // --- LÓGICA DE VISUALIZACIÓN ---
-  
-  // Filtramos posts visibles
   const visiblePosts = posts.filter(post => {
-    const statusOk = isUserAdmin ? true : post.status === "approved"; // Admin ve todo, alumnos solo aprobados
+    const isOwner = user && post.author === user.email;
+    
+    // Modo "Mis Anuncios": Solo muestra lo mío (aprobado o pendiente)
+    if (filter === 'mine') return isOwner;
+
+    // Modo Normal: Muestra si es admin, dueño, o está aprobado
+    const statusOk = isUserAdmin || isOwner || post.status === "approved";
     const typeOk = filter === "all" ? true : post.type === filter;
+
     return statusOk && typeOk;
   });
 
-  // Separamos: Mis Fijados vs El Resto
-  // Solo mostramos en "Fijados" aquellos que existen en visiblePosts (por si se borraron de la DB)
-  const myPinnedPosts = visiblePosts.filter(p => pinnedIds.includes(p.id));
-  const feedPosts = visiblePosts.filter(p => !pinnedIds.includes(p.id));
+  const myPinnedPosts = filter === 'mine' ? [] : visiblePosts.filter(p => pinnedIds.includes(p.id));
+  const feedPosts = filter === 'mine' ? visiblePosts : visiblePosts.filter(p => !pinnedIds.includes(p.id));
 
   if (loading) return <div className="nb-loading">Cargando tablón EUNEIZ...</div>;
 
   return (
     <div className="nb-container">
-      
       <header className="nb-header">
         <div className="nb-header-content">
           <h1>📌 Tablón EUNEIZ</h1>
-          <p>Comunidad universitaria {isUserAdmin && <span className="badge-admin">MODO ADMIN ACTIVO</span>}</p>
+          <p>
+            Comunidad universitaria 
+            {isUserAdmin && <span className="badge-admin">Modo Admin</span>}
+          </p>
           
           <div className="nb-filters">
-            <button className={`filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter("all")}>Todo</button>
+            <button 
+              className={`filter-pill ${filter === 'all' ? 'active' : ''}`} 
+              onClick={() => setFilter("all")}
+            >
+              Todo
+            </button>
+            
+            <button 
+              className={`filter-pill ${filter === 'mine' ? 'active' : ''}`} 
+              onClick={() => setFilter("mine")}
+              style={{ '--cat-color': '#34495e' }}
+            >
+              👤 Mis Anuncios
+            </button>
+
             {Object.entries(CATEGORIES).map(([key, config]) => (
               <button 
                 key={key}
@@ -174,17 +176,16 @@ export const NoticeBoard = () => {
       </header>
 
       <main className="nb-grid">
-        
-        {/* SECCIÓN PERSONAL: MIS FIJADOS */}
-        {myPinnedPosts.length > 0 && filter === 'all' && (
+        {myPinnedPosts.length > 0 && filter !== 'mine' && (
           <div className="nb-section-pinned">
-            <h3>⭐ Mis Anuncios Fijados</h3>
+            <h3>⭐ Favoritos Fijados</h3>
             <div className="pinned-grid">
               {myPinnedPosts.map(post => (
                 <Card 
                   key={post.id} 
                   post={post} 
                   isAdmin={isUserAdmin} 
+                  currentUserEmail={user?.email}
                   isPinned={true}
                   onPin={() => togglePin(post.id)}
                   onDelete={deletePost}
@@ -195,12 +196,15 @@ export const NoticeBoard = () => {
           </div>
         )}
 
-        {/* FEED GENERAL */}
         <div className="feed-grid">
           {feedPosts.length === 0 && myPinnedPosts.length === 0 ? (
             <div className="empty-feed">
               <span>📭</span>
-              <p>No hay anuncios disponibles en esta categoría.</p>
+              <p>
+                {filter === 'mine' 
+                  ? "Aún no has publicado nada." 
+                  : "No hay anuncios en esta categoría."}
+              </p>
             </div>
           ) : (
             feedPosts.map(post => (
@@ -208,6 +212,7 @@ export const NoticeBoard = () => {
                 key={post.id} 
                 post={post} 
                 isAdmin={isUserAdmin} 
+                currentUserEmail={user?.email}
                 isPinned={false}
                 onPin={() => togglePin(post.id)}
                 onDelete={deletePost}
@@ -218,19 +223,21 @@ export const NoticeBoard = () => {
         </div>
       </main>
 
-      <button className="fab-add" onClick={() => setIsModalOpen(true)}>+</button>
+      <button className="fab-add" onClick={() => setIsModalOpen(true)} title="Nuevo Anuncio">+</button>
 
-      {/* MODAL (Igual que antes pero ahora guarda en Firebase) */}
+      {/* MODAL CREACIÓN */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}>✕</button>
             <h2>Publicar Anuncio</h2>
+            
             <form onSubmit={handleSubmit} className="post-form">
               <div className="form-group">
-                <label>Categoría</label>
+                <label>Elige una categoría</label>
                 <div className="cat-selector">
                   {Object.entries(CATEGORIES).map(([key, config]) => {
-                    if (config.adminOnly && !isUserAdmin) return null; // Solo admin ve Secretaría
+                    if (config.adminOnly && !isUserAdmin) return null;
                     return (
                       <label key={key} className={`cat-radio ${formData.type === key ? 'selected' : ''}`}>
                         <input type="radio" name="type" value={key} checked={formData.type === key} onChange={handleInputChange} />
@@ -242,38 +249,40 @@ export const NoticeBoard = () => {
               </div>
 
               <div className="form-group">
-                <label>Título</label>
-                <input type="text" name="title" required value={formData.title} onChange={handleInputChange} maxLength={60} />
+                <label>Título breve</label>
+                <input type="text" name="title" required value={formData.title} onChange={handleInputChange} maxLength={60} placeholder="Ej: Vendo apuntes de Anatomía..." />
               </div>
 
               {formData.type === "carpooling" && (
                 <div className="form-row">
-                  <input type="text" name="origin" placeholder="📍 Origen" value={formData.origin} onChange={handleInputChange} />
-                  <span className="arrow">➝</span>
-                  <input type="text" name="dest" placeholder="🏁 Destino" value={formData.dest} onChange={handleInputChange} />
+                  <div className="form-group" style={{flex:1}}>
+                    <input type="text" name="origin" placeholder="📍 Origen" value={formData.origin} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group" style={{flex:1}}>
+                    <input type="text" name="dest" placeholder="🏁 Destino" value={formData.dest} onChange={handleInputChange} />
+                  </div>
                 </div>
               )}
 
-              {formData.type === "venta" && (
+              {(formData.type === "venta" || formData.type === "vivienda") && (
                 <div className="form-group">
-                  <label>Precio (€)</label>
+                  <label>{formData.type === "vivienda" ? "Alquiler mensual (€)" : "Precio (€)"}</label>
                   <input type="number" name="price" placeholder="0.00" value={formData.price} onChange={handleInputChange} />
                 </div>
               )}
 
               <div className="form-group">
-                <label>Descripción</label>
-                <textarea name="desc" required value={formData.desc} onChange={handleInputChange} rows={3}></textarea>
+                <label>Descripción detallada</label>
+                <textarea name="desc" required value={formData.desc} onChange={handleInputChange} rows={4} placeholder="Cuenta los detalles importantes..."></textarea>
               </div>
 
               <div className="form-group">
-                <label>Contacto</label>
-                <input type="text" name="contact" value={formData.contact} onChange={handleInputChange} placeholder="Email o teléfono" />
+                <label>Contacto (Visible para todos)</label>
+                <input type="text" name="contact" value={formData.contact} onChange={handleInputChange} placeholder="Tu email, teléfono o Instagram" />
               </div>
 
-              <button type="submit" className="btn-publish">Publicar</button>
+              <button type="submit" className="btn-publish">Publicar Anuncio</button>
             </form>
-            <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}>✕</button>
           </div>
         </div>
       )}
@@ -282,16 +291,21 @@ export const NoticeBoard = () => {
 };
 
 // --- COMPONENTE CARD ---
-const Card = ({ post, isAdmin, isPinned, onPin, onDelete, onApprove }) => {
-  const config = CATEGORIES[post.type] || CATEGORIES.eventos;
+const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onApprove }) => {
+  // Aseguramos que siempre haya una config, por si se borra una categoría
+  const config = CATEGORIES[post.type] || CATEGORIES.otros;
   
+  const isOwner = currentUserEmail && post.author === currentUserEmail;
+  const canDelete = isAdmin || isOwner;
+
   return (
     <div className={`notice-card card-${post.type} ${post.status === 'pending' ? 'pending-card' : ''}`}>
+      
+      {/* HEADER CARD */}
       <div className="card-top">
-        <span className="card-badge" style={{ backgroundColor: config.color }}>
+        <span className="card-badge">
           {config.icon} {config.label}
         </span>
-        {/* BOTÓN DE PIN INDIVIDUAL */}
         <button 
           className={`btn-pin ${isPinned ? 'active' : ''}`} 
           onClick={(e) => { e.stopPropagation(); onPin(); }}
@@ -301,34 +315,48 @@ const Card = ({ post, isAdmin, isPinned, onPin, onDelete, onApprove }) => {
         </button>
       </div>
 
+      {/* CONTENIDO */}
       <div className="card-content">
         <h3>{post.title}</h3>
+
+        {/* Bloque Carpooling */}
         {post.type === "carpooling" && post.meta && (
           <div className="carpool-route">
-            <div className="route-point"><span className="dot origin"></span> {post.meta.origen}</div>
+            <div className="route-point"><span className="dot origin"></span> {post.meta.origen || "?"}</div>
             <div className="route-line"></div>
-            <div className="route-point"><span className="dot dest"></span> {post.meta.destino}</div>
+            <div className="route-point"><span className="dot dest"></span> {post.meta.destino || "?"}</div>
           </div>
         )}
-        {post.type === "venta" && post.meta?.price && <div className="price-tag">{post.meta.price} €</div>}
-        
+
+        {/* Bloque Precio */}
+        {(post.type === "venta" || post.type === "vivienda") && post.meta?.price && (
+          <div className="price-tag">
+            {post.meta.price}€ <small style={{fontSize:'0.6em', color:'gray'}}>{post.type === "vivienda" ? "/ mes" : ""}</small>
+          </div>
+        )}
+
         <p className="card-desc">{post.desc}</p>
         
         <div className="card-meta-footer">
-          <small>{new Date(post.date).toLocaleDateString()} • {post.author.split('@')[0]}</small>
+          <span>{new Date(post.date).toLocaleDateString()} • {isOwner ? <strong>Tú</strong> : post.author.split('@')[0]}</span>
           {post.meta?.contact && <span className="contact-pill">📞 {post.meta.contact}</span>}
         </div>
       </div>
 
-      {/* BARRA DE MODERACIÓN (SOLO ADMINS) */}
-      {isAdmin && (
+      {/* ACCIONES (Admin/Owner) */}
+      {(isAdmin || canDelete) && (
         <div className="admin-actions">
-          {post.status === 'pending' && <button className="btn-approve" onClick={() => onApprove(post.id)}>✅ Aprobar</button>}
-          <button className="btn-delete" onClick={() => onDelete(post.id)}>🗑️ Borrar</button>
+          {isAdmin && post.status === 'pending' && (
+            <button className="btn-approve" onClick={() => onApprove(post.id)}>✅ Aprobar</button>
+          )}
+          {canDelete && (
+            <button className="btn-delete" onClick={() => onDelete(post.id)}>🗑️ Borrar</button>
+          )}
         </div>
       )}
 
-      {post.status === 'pending' && <div className="pending-overlay">⏳ Revisión</div>}
+      {/* ESTADO PENDIENTE */}
+      {post.status === 'pending' && <div className="pending-overlay">En Revisión</div>}
     </div>
   );
 };
