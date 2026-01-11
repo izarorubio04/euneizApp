@@ -1,127 +1,70 @@
-import "../comunidad.css";
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { competiciones } from "./data";
+import "./Competiciones.css";
+import { Trophy, ArrowLeft, BarChart2, Users, Medal } from "lucide-react";
 
 export default function CompeticionDetalle() {
   const { id } = useParams();
   const comp = competiciones.find((c) => c.id === id);
 
-  if (!comp) {
-    return (
-      <div className="comunidad-container">
-        <h1>Competición no encontrada</h1>
-        <Link to="/competiciones">
-          <button className="main-menu-btn">Volver</button>
-        </Link>
-      </div>
-    );
-  }
-
-  const esLoL = comp.tipo === "lol";
+  if (!comp) return <div className="comp-container">Competición no encontrada</div>;
+  
+  // Detectar si es esports para ocultar columnas de fútbol
+  const esLoL = comp.tipo === "lol" || comp.id === "esports";
 
   return (
-    <div className="comunidad-container">
-      {/* TOPBAR + TABS */}
-      <div className="comp-topbar">
-        <div>
-          <h1 style={{ margin: 0 }}>{comp.titulo}</h1>
-          <p style={{ marginTop: "0.5rem" }}>{comp.descripcion}</p>
-          <p>
-            <strong>Fechas:</strong> {comp.fecha}
-          </p>
+    <div className="comp-container">
+      {/* TOPBAR */}
+      <div className="detail-topbar">
+        <div className="detail-header-row">
+          <div>
+            <h1>{comp.titulo}</h1>
+            <p className="detail-subtitle">{comp.descripcion}</p>
+          </div>
         </div>
 
         <div className="comp-tabs">
-          <Link to={`/competiciones/${comp.id}`}>
-            <button className="comp-tab-btn active">Fase de grupos</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/fase-final`}>
-            <button className="comp-tab-btn">Fase final</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/estadisticas`}>
-            <button className="comp-tab-btn">Estadísticas</button>
-          </Link>
-
+          <Link to={`/comunidad/competiciones/${id}`}><button className="comp-tab-btn active"><Users size={16} style={{marginBottom:-2}}/> Clasificación</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/fase-final`}><button className="comp-tab-btn"><Medal size={16} style={{marginBottom:-2}}/> Fase Final</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/estadisticas`}><button className="comp-tab-btn"><BarChart2 size={16} style={{marginBottom:-2}}/> Estadísticas</button></Link>
         </div>
       </div>
 
-      {/* FASE DE GRUPOS */}
-      <h2>Fase de grupos</h2>
-
-      {comp.grupos.map((g) => (
-        <div
-          key={g.nombre}
-          className="tarjeta-comunidad"
-          style={{ marginTop: "1rem" }}
-        >
-          <h3 style={{ marginTop: 0 }}>{g.nombre}</h3>
-
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      {/* TABLAS */}
+      {comp.grupos.map((g, idx) => (
+        <div key={idx} className="table-card">
+          <div className="table-header"><Trophy size={18} /><h3>{g.nombre}</h3></div>
+          <div className="table-responsive">
+            <table className="standings-table">
               <thead>
-                <tr style={{ textAlign: "left" }}>
+                <tr>
                   <th>Equipo</th>
                   <th>PJ</th>
                   <th>V</th>
                   <th>D</th>
-
-                  {/* Solo fútbol */}
-                  {!esLoL && (
-                    <>
-                      <th>E</th>
-                      <th>GF</th>
-                      <th>GC</th>
-                    </>
-                  )}
-
-                  <th>PTS</th>
+                  {!esLoL && <><th>E</th><th>GF</th><th>GC</th></>}
+                  <th className="col-pts">PTS</th>
                 </tr>
               </thead>
-
               <tbody>
-                {g.tabla.map((r) => (
-                  <tr key={r.equipo}>
-                    <td style={{ padding: "0.35rem 0" }}>{r.equipo}</td>
+                {g.tabla.map((r, i) => (
+                  <tr key={i}>
+                    <td style={{fontWeight:600}}>{r.equipo}</td>
                     <td>{r.pj}</td>
                     <td>{r.v}</td>
                     <td>{r.d}</td>
-
-                    {!esLoL && (
-                      <>
-                        <td>{r.e}</td>
-                        <td>{r.gf}</td>
-                        <td>{r.gc}</td>
-                      </>
-                    )}
-
-                    <td style={{ fontWeight: 800 }}>{r.pts}</td>
+                    {!esLoL && <><td>{r.e}</td><td>{r.gf}</td><td>{r.gc}</td></>}
+                    <td className="col-pts">{r.pts}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-        
         </div>
       ))}
-
-      {/* ACCIONES */}
-      <div
-        style={{
-          marginTop: "1.5rem",
-          display: "flex",
-          gap: "0.75rem",
-          flexWrap: "wrap",
-        }}
-      >
-
-
-        <Link to="/competiciones">
-          <button className="main-menu-btn">Volver a Competiciones</button>
-        </Link>
-      </div>
+      
+      <Link to="/comunidad/competiciones"><button className="btn-back"><ArrowLeft size={18} /> Volver</button></Link>
     </div>
   );
 }

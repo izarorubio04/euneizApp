@@ -1,88 +1,56 @@
-import "../comunidad.css";
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { competiciones } from "./data";
+import "./Competiciones.css";
+import { ArrowLeft, BarChart2, Users, Medal, Swords } from "lucide-react";
 
 export default function FaseFinal() {
   const { id } = useParams();
   const comp = competiciones.find((c) => c.id === id);
 
-  if (!comp) {
-    return (
-      <div className="comunidad-container">
-        <h1>Competición no encontrada</h1>
-        <Link to="/competiciones">
-          <button className="main-menu-btn">Volver</button>
-        </Link>
-      </div>
-    );
-  }
+  if (!comp) return <div className="comp-container">No encontrado</div>;
+
+  // Función auxiliar para renderizar cada bloque de partidos
+  const renderBracket = (titulo, partidos) => (
+    <div className="bracket-section" key={titulo}>
+      <h4 className="bracket-title">{titulo.toUpperCase()}</h4>
+      {partidos.map((match) => (
+        <div key={match.id} className="match-card">
+          <div className="team-side">{match.equipoA}</div>
+          <div style={{textAlign:'center', minWidth:'80px'}}>
+            <div className="score-box">{match.resultado}</div>
+          </div>
+          <div className="team-side right">{match.equipoB}</div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="comunidad-container">
-      {/* TOPBAR + TABS */}
-      <div className="comp-topbar">
-        <div>
-          <h1 style={{ margin: 0 }}>{comp.titulo}</h1>
-          <p style={{ marginTop: "0.5rem" }}>{comp.descripcion}</p>
-          <p>
-            <strong>Fechas:</strong> {comp.fecha}
-          </p>
+    <div className="comp-container">
+      <div className="detail-topbar">
+        <div className="detail-header-row">
+          <div><h1>{comp.titulo}</h1><p className="detail-subtitle">{comp.descripcion}</p></div>
         </div>
-
         <div className="comp-tabs">
-          <Link to={`/competiciones/${comp.id}`}>
-            <button className="comp-tab-btn">Fase de grupos</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/fase-final`}>
-            <button className="comp-tab-btn active">Fase final</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/estadisticas`}>
-            <button className="comp-tab-btn">Estadísticas</button>
-          </Link>
+          <Link to={`/comunidad/competiciones/${id}`}><button className="comp-tab-btn"><Users size={16} style={{marginBottom:-2}}/> Clasificación</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/fase-final`}><button className="comp-tab-btn active"><Medal size={16} style={{marginBottom:-2}}/> Fase Final</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/estadisticas`}><button className="comp-tab-btn"><BarChart2 size={16} style={{marginBottom:-2}}/> Estadísticas</button></Link>
         </div>
       </div>
 
-      {/* FASE FINAL */}
-      <h2>Fase final</h2>
-
-      <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-        <h3 style={{ marginTop: 0 }}>Semifinales</h3>
-
-        {comp.faseFinal?.semifinales?.length ? (
-          comp.faseFinal.semifinales.map((p) => (
-            <p key={p.id}>
-              <strong>{p.equipoA}</strong> vs <strong>{p.equipoB}</strong> — {p.resultado}
-            </p>
-          ))
-        ) : (
-          <p style={{ color: "#4b5563" }}>Todavía no hay partidos cargados.</p>
-        )}
+      <div className="table-card">
+        <div className="table-header"><Swords size={18}/><h3>Eliminatorias</h3></div>
+        <div style={{paddingBottom: '1rem'}}>
+          {comp.faseFinal && Object.keys(comp.faseFinal).length > 0 ? (
+            Object.entries(comp.faseFinal).map(([fase, partidos]) => renderBracket(fase, partidos))
+          ) : (
+            <div style={{padding:'2rem', textAlign:'center', color:'#94a3b8'}}>Fase final no disponible.</div>
+          )}
+        </div>
       </div>
 
-      <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-        <h3 style={{ marginTop: 0 }}>Final</h3>
-
-        {comp.faseFinal?.final?.length ? (
-          comp.faseFinal.final.map((p) => (
-            <p key={p.id}>
-              <strong>{p.equipoA}</strong> vs <strong>{p.equipoB}</strong> — {p.resultado}
-            </p>
-          ))
-        ) : (
-          <p style={{ color: "#4b5563" }}>Todavía no hay final cargada.</p>
-        )}
-      </div>
-
-      {/* ACCIONES */}
-      <div style={{ marginTop: "1.5rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-    
-
-        <Link to="/competiciones">
-          <button className="main-menu-btn">Volver a Competiciones</button>
-        </Link>
-      </div>
+      <Link to="/comunidad/competiciones"><button className="btn-back"><ArrowLeft size={18} /> Volver</button></Link>
     </div>
   );
 }

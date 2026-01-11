@@ -1,151 +1,67 @@
-import "../comunidad.css";
+import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { competiciones } from "./data";
+import "./Competiciones.css";
+import { ArrowLeft, BarChart2, Users, Medal, Star } from "lucide-react";
 
 export default function Estadisticas() {
   const { id } = useParams();
   const comp = competiciones.find((c) => c.id === id);
+  if (!comp) return <div>No encontrado</div>;
 
-  if (!comp) {
-    return (
-      <div className="comunidad-container">
-        <h1>Competición no encontrada</h1>
-        <Link to="/competiciones">
-          <button className="main-menu-btn">Volver</button>
-        </Link>
-      </div>
-    );
-  }
+  const stats = comp.stats;
 
-  const esLoL = comp.tipo === "lol";
+  // Función para obtener el valor numérico de un objeto de estadística (busca keys comunes)
+  const getStatValue = (item) => {
+    return item.goles || item.gf || item.gc || item.mvp || item.kills || item.vision || item.kda || "-";
+  };
+  
+  // Función para obtener la etiqueta (jugador o equipo)
+  const getStatLabel = (item) => {
+    return item.jugador || item.equipo || "Desconocido";
+  };
 
   return (
-    <div className="comunidad-container">
-      {/* TOPBAR + TABS */}
-      <div className="comp-topbar">
-        <div>
-          <h1 style={{ margin: 0 }}>{comp.titulo}</h1>
-          <p style={{ marginTop: "0.5rem" }}>{comp.descripcion}</p>
-          <p>
-            <strong>Fechas:</strong> {comp.fecha}
-          </p>
+    <div className="comp-container">
+      <div className="detail-topbar">
+        <div className="detail-header-row">
+          <div><h1>{comp.titulo}</h1><p className="detail-subtitle">{comp.descripcion}</p></div>
         </div>
-
         <div className="comp-tabs">
-          <Link to={`/competiciones/${comp.id}`}>
-            <button className="comp-tab-btn">Fase de grupos</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/fase-final`}>
-            <button className="comp-tab-btn">Fase final</button>
-          </Link>
-
-          <Link to={`/competiciones/${comp.id}/estadisticas`}>
-            <button className="comp-tab-btn active">Estadísticas</button>
-          </Link>
+          <Link to={`/comunidad/competiciones/${id}`}><button className="comp-tab-btn"><Users size={16} style={{marginBottom:-2}}/> Clasificación</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/fase-final`}><button className="comp-tab-btn"><Medal size={16} style={{marginBottom:-2}}/> Fase Final</button></Link>
+          <Link to={`/comunidad/competiciones/${id}/estadisticas`}><button className="comp-tab-btn active"><BarChart2 size={16} style={{marginBottom:-2}}/> Estadísticas</button></Link>
         </div>
       </div>
 
-      {/* CONTENIDO */}
-      {esLoL ? (
-        <>
-          <h2>Estadísticas — League of Legends</h2>
-          <p style={{ color: "#4b5563", marginTop: "0.5rem" }}>
-            Resumen del torneo: MVPs, daño, kills, visión y KDA.
-          </p>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>🏆 MVPs (más veces MVP)</h3>
-            <ul>
-              {comp.stats.mvps.map((x) => (
-                <li key={x.jugador}>
-                  {x.jugador} — <strong>{x.mvp}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>🔪 Más kills (jugador)</h3>
-            <ul>
-              {comp.stats.masKills.map((x) => (
-                <li key={x.jugador}>
-                  {x.jugador} — <strong>{x.kills}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>👁️ Más visión (vision score)</h3>
-            <ul>
-              {comp.stats.masVision.map((x) => (
-                <li key={x.jugador}>
-                  {x.jugador} — <strong>{x.vision}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>📈 KDA top</h3>
-            <ul>
-              {comp.stats.kdaTop.map((x) => (
-                <li key={x.jugador}>
-                  {x.jugador} — <strong>{x.kda}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+      {stats ? (
+        <div className="stats-grid-container">
+          {Object.entries(stats).map(([key, items]) => (
+            <div key={key} className="table-card stat-table-card">
+              <div className="table-header" style={{background: 'var(--primary)'}}>
+                <Star size={16} fill="white" />
+                <h3 style={{textTransform:'capitalize'}}>{key.replace(/([A-Z])/g, ' $1').trim()}</h3> 
+                {/* Regex para separar camelCase bonito: masGoleadores -> Mas Goleadores */}
+              </div>
+              <table className="standings-table">
+                <tbody>
+                  {items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td style={{width:'30px', color:'#94a3b8', fontWeight:'bold'}}>#{idx + 1}</td>
+                      <td style={{fontWeight:600}}>{getStatLabel(item)}</td>
+                      <td className="col-pts" style={{width:'60px'}}>{getStatValue(item)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
       ) : (
-        <>
-          <h2>Estadísticas — Fútbol</h2>
-          <p style={{ color: "#4b5563", marginTop: "0.5rem" }}>
-            Pichichis y equipos más goleadores / menos goleados.
-          </p>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>🏅 Pichichis</h3>
-            <ul>
-              {comp.stats.pichichis.map((p) => (
-                <li key={p.jugador}>
-                  {p.jugador} — <strong>{p.goles}</strong>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>⚽ Equipos más goleadores</h3>
-            <ul>
-              {comp.stats.masGoleadores.map((e) => (
-                <li key={e.equipo}>
-                  {e.equipo} — <strong>{e.gf}</strong> GF
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="tarjeta-comunidad" style={{ marginTop: "1rem" }}>
-            <h3>🧤 Equipos menos goleados</h3>
-            <ul>
-              {comp.stats.menosGoleados.map((e) => (
-                <li key={e.equipo}>
-                  {e.equipo} — <strong>{e.gc}</strong> GC
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+        <div style={{padding:'2rem', textAlign:'center', color:'#94a3b8'}}>No hay estadísticas disponibles todavía.</div>
       )}
 
-      <Link to="/competiciones">
-        <button className="main-menu-btn" style={{ marginTop: "1.5rem" }}>
-          Volver a Competiciones
-        </button>
-      </Link>
+      <Link to="/comunidad/competiciones"><button className="btn-back"><ArrowLeft size={18} /> Volver</button></Link>
     </div>
   );
 }
