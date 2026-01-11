@@ -1,171 +1,232 @@
+/* src/components/Layout/MainLayout.css */
+
 /* =========================
    LAYOUT GENERAL
    ========================= */
+.layout-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f3f4f6; /* Fondo gris muy suave para el contenido */
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden; /* Evita scroll doble */
+}
 
-   .layout-container {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f8fafc; /* Igual que comunidad */
-    text-align: left;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-      sans-serif;
-  }
+/* =========================
+   SIDEBAR (Estilo Flotante)
+   ========================= */
+.sidebar {
+  /* Dimensiones y posición */
+  width: 260px;
+  height: 96vh; /* No ocupa todo el alto para dar efecto flotante */
+  margin: 2vh 0 2vh 2vh; /* Margen izquierdo y vertical */
   
-  /* =========================
-     SIDEBAR
-     ========================= */
+  /* Estilo Visual - Color Solicitado */
+  background-color: #000B3D; 
+  color: #ecf0f1;
+  border-radius: 24px; /* Bordes redondeados */
   
-  .sidebar {
-    width: 260px;
-    background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-  }
+  /* Flexbox interno */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 11, 61, 0.15); /* Sombra suave */
+  z-index: 100;
+}
+
+/* --- Header del Sidebar --- */
+.sidebar-header {
+  padding: 2rem 1.5rem 1rem;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.badge-beta {
+  background: rgba(255, 255, 255, 0.1);
+  color: #a0aec0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* --- Navegación --- */
+.sidebar-nav {
+  flex: 1;
+  padding: 0 1rem;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
+/* Scrollbar invisible pero funcional para el menú */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+.nav-section {
+  font-size: 0.7rem;
+  color: #64748b; /* Gris azulado para títulos de sección */
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 1.5rem 0 0.5rem 0.8rem;
+  text-transform: uppercase;
+}
+
+/* Items del Menú */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 4px;
   
-  
-  
-  .sidebar-logo {
-    display: flex;
-    align-items: baseline; /* clave para alineación tipográfica */
-    gap: 0.4rem;
-  }
-  
-  .sidebar-logo h2 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    color: #111827;
-  }
-  
-  .badge-beta {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #6b7280;
-    text-transform: lowercase;
-    letter-spacing: 0.02em;
-  }
-  
-  /* =========================
-     CONTENIDO
-     ========================= */
-  
-  .content-area {
-    flex: 1;
-    padding: 2rem;
-    overflow-y: auto;
-  }
-  
-  /* =========================
-     NAVEGACIÓN
-     ========================= */
-  
-  .sidebar-nav {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-top: 2rem;
-  }
-  
-  .nav-section {
-    font-size: 0.7rem;
-    color: #9ca3af;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    margin-top: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Links */
-  .nav-item {
-    text-decoration: none;
-    color: #374151;
-    padding: 0.65rem 0.75rem;
-    border-radius: 10px;
-    transition: background-color 0.2s, color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
-  }
-  
-  .nav-item:hover {
-    background-color: #f1f5f9;
-  }
-  
-  /* Activo */
-  .nav-item.active {
-    background-color: #e0e7ff;
-    color: #4f46e5;
-    font-weight: 600;
-  }
-  
-  /* =========================
-     FOOTER SIDEBAR (USUARIO)
-     ========================= */
-  
-  .sidebar-footer {
-    border-top: 1px solid #e5e7eb;
-    padding-top: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    color: #111827;
-    margin-bottom: 0.75rem;
-  }
-  
-  .avatar-placeholder {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: #4f46e5;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-  }
-  
-  .user-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
-  }
-  
-  .user-name {
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  
-  .user-role {
-    font-size: 0.7rem;
-    color: #6b7280;
-  }
-  
-  /* Botón salir */
-  .logout-mini-btn {
-    width: 100%;
-    padding: 0.5rem;
-    font-size: 0.8rem;
-    border-radius: 8px;
-    border: none;
-    background-color: #f3f4f6;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .logout-mini-btn:hover {
-    background-color: #e5e7eb;
-  }
+  text-decoration: none;
+  color: #cbd5e1; /* Blanco hueso suave */
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 12px; /* Efecto píldora */
+  transition: all 0.2s ease;
+}
+
+/* Iconos dentro del nav item */
+.nav-item svg {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+/* --- ESTADOS (Hover / Active) en GRISES --- */
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.nav-item:hover svg {
+  opacity: 1;
+}
+
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.15); /* Gris traslúcido elegante */
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sutil elevación */
+}
+
+.nav-item.active svg {
+  opacity: 1;
+}
+
+/* =========================
+   FOOTER (Perfil Usuario)
+   ========================= */
+.sidebar-footer {
+  padding: 1.2rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2); /* Ligeramente más oscuro */
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
+.user-info-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 6px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.user-info-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Botón Logout discreto */
+.logout-icon-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444; /* Mantenemos rojo solo para peligro/salida, pero sutil */
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0.7;
+}
+
+.logout-icon-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  opacity: 1;
+}
+
+/* =========================
+   ÁREA DE CONTENIDO
+   ========================= */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  /* Animación de entrada suave para el contenido */
+  animation: fadeIn 0.4s ease-out; 
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

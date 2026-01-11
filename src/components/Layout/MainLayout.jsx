@@ -1,8 +1,22 @@
 // src/components/Layout/MainLayout.jsx
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { auth } from "../../firebase/config"; // Importa auth directamente para el signOut
-import "./MainLayout.css"; // Crearemos este CSS básico después
+import { auth } from "../../firebase/config";
+import { 
+  Home, 
+  LayoutDashboard, 
+  Calendar, 
+  Mail, 
+  Users, 
+  Tent, 
+  Trophy, 
+  BrainCircuit, 
+  Lightbulb, 
+  Library, 
+  Key, 
+  LogOut 
+} from "lucide-react"; // Importamos los iconos elegantes
+import "./MainLayout.css";
 
 export const MainLayout = () => {
   const { user } = useAuth();
@@ -15,85 +29,80 @@ export const MainLayout = () => {
 
   return (
     <div className="layout-container">
-      {/* --- SIDEBAR (Menú Lateral) --- */}
+      {/* --- SIDEBAR FLOTANTE --- */}
       <aside className="sidebar">
-        <div className="sidebar-logo">
-          <h2>EUNEIZ</h2>
-          <span className="badge-beta">Community</span>
+        <div className="sidebar-header">
+          <div className="logo-container">
+            <h2>EUNEIZ</h2>
+            <span className="badge-beta">HUB</span>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
           <p className="nav-section">PRINCIPAL</p>
-          <NavLink to="/home" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            🏠 Home
+          <NavLink to="/home" className="nav-item">
+            <Home size={20} /> <span>Inicio</span>
           </NavLink>
-          <NavLink to="/notice-board" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            📢 Tablón
+          <NavLink to="/notice-board" className="nav-item">
+            <LayoutDashboard size={20} /> <span>Tablón</span>
           </NavLink>
-          <NavLink to="/calendar" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            📅 Calendario
+          {/* Calendario (placeholder) */}
+          <NavLink to="/calendar" className="nav-item">
+            <Calendar size={20} /> <span>Calendario</span>
           </NavLink>
-
-          <NavLink to="/inbox" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            📬 Mensajes
+          <NavLink to="/inbox" className="nav-item">
+            <Mail size={20} /> <span>Mensajes</span>
           </NavLink>
 
           <p className="nav-section">COMUNIDAD</p>
-
-          <NavLink
-          to="/comunidad/comunidades"
-          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
-            👥 Comunidades
+          <NavLink to="/comunidad/comunidades" className="nav-item">
+            <Users size={20} /> <span>Comunidades</span>
           </NavLink>
-
-        <NavLink
-          to="/comunidad/clubs"
-          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
-          🏫 Clubs
-        </NavLink>
-
-        <NavLink
-          to="/comunidad/competiciones"
-          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
-          🏆 Competiciones
+          <NavLink to="/comunidad/clubs" className="nav-item">
+            <Tent size={20} /> <span>Clubs</span>
           </NavLink>
-
-        <NavLink
-          to="/comunidad/psicologia"
-          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
-            🧠 Psicología
-        </NavLink>
-
-        <NavLink
-          to="/comunidad/proyectos"
-          className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}>
-            🧩 Proyectos de Alumnos
-        </NavLink>
+          <NavLink to="/comunidad/competiciones" className="nav-item">
+            <Trophy size={20} /> <span>Competiciones</span>
+          </NavLink>
+          <NavLink to="/comunidad/psicologia" className="nav-item">
+            <BrainCircuit size={20} /> <span>Psicología</span>
+          </NavLink>
+          <NavLink to="/comunidad/proyectos" className="nav-item">
+            <Lightbulb size={20} /> <span>Proyectos</span>
+          </NavLink>
 
           <p className="nav-section">SERVICIOS</p>
-          <NavLink to="/library" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            📚 Biblioteca
+          <NavLink to="/library" className="nav-item">
+            <Library size={20} /> <span>Biblioteca</span>
           </NavLink>
-          <NavLink to="/rooms" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            🔑 Reservas Aulas
+          <NavLink to="/rooms" className="nav-item">
+            <Key size={20} /> <span>Aulas</span>
           </NavLink>
         </nav>
 
+        {/* FOOTER DEL USUARIO */}
         <div className="sidebar-footer">
-          <NavLink to="/profile" className="user-info">
-            <div className="avatar-placeholder">{user?.email?.charAt(0).toUpperCase()}</div>
-            <div className="user-text">
+          <NavLink to="/profile" className="user-info-card">
+            <div className="avatar-circle">
+              {user?.email?.charAt(0).toUpperCase()}
+            </div>
+            <div className="user-details">
               <span className="user-name">Mi Perfil</span>
-              <span className="user-role">Alumno</span>
+              <span className="user-email">{user?.email?.split('@')[0]}</span>
             </div>
           </NavLink>
-          <button onClick={handleLogout} className="logout-mini-btn">Salir</button>
+          
+          <button onClick={handleLogout} className="logout-icon-btn" title="Cerrar sesión">
+            <LogOut size={18} />
+          </button>
         </div>
       </aside>
 
-      {/* --- CONTENIDO DINÁMICO (Aquí se cargan las páginas) --- */}
+      {/* --- ÁREA DE CONTENIDO --- */}
       <main className="content-area">
-        <Outlet /> 
+        <div className="content-wrapper">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
