@@ -27,8 +27,6 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 
-const ADMIN_EMAILS = ["admin@euneiz.com", "secretaria@euneiz.com"];
-
 const DEGREES = [
   "Multimedia",
   "Desarrollo de Videojuegos",
@@ -39,8 +37,7 @@ const DEGREES = [
 ];
 
 export default function Proyectos() {
-  const { user } = useAuth();
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email);
+  const { user,isAdmin } = useAuth();
 
   // Estados
   const [projects, setProjects] = useState([]);

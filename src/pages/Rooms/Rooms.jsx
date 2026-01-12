@@ -14,9 +14,6 @@ import {
   Search, User, ArrowRight
 } from "lucide-react";
 
-// --- CONFIGURACIÓN ADMIN (Igual que en NoticeBoard y Projects) ---
-const ADMIN_EMAILS = ["admin@euneiz.com", "secretaria@euneiz.com"];
-
 // GENERADOR DE AULAS
 const FLOORS = [1, 2];
 const ROOMS_PER_FLOOR = 5; 
@@ -38,9 +35,7 @@ const TIME_SLOTS = [
 ];
 
 export const Rooms = () => {
-  const { user } = useAuth();
-  // 1. LÓGICA DE ADMINISTRADOR
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email);
+  const { user, isAdmin } = useAuth();
   
   // --- ESTADOS ---
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);

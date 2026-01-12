@@ -26,13 +26,10 @@ import {
 import IconTech from "../../assets/icon-tech.svg"; 
 import IconHealth from "../../assets/icon-health.svg";
 
-// CONFIGURACIÓN ADMIN
-const ADMIN_EMAILS = ["admin@euneiz.com", "secretaria@euneiz.com"];
 
 export const Library = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
-  const isAdmin = user && ADMIN_EMAILS.includes(user.email);
   
   // --- ESTADOS ---
   const [allBooks, setAllBooks] = useState([]);
