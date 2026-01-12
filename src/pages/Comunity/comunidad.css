@@ -185,5 +185,55 @@
   border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 1rem; margin-top: 0.5rem;
 }
 .btn-submit-com:hover { background: var(--accent); }
+/* Wrapper para los nuevos iconos Lucide de los clubs */
+.club-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 12px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.club-card:hover .club-icon-wrapper {
+  background: var(--club-color);
+  color: white !important; /* Forza el blanco al hacer hover */
+}
+
+/* Estilo para el botón cuando ya te has unido */
+.btn-join {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-join:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-join.joined {
+  background: #dcfce7;
+  border-color: #166534;
+  color: #166534;
+  cursor: default;
+}
+.btn-join.joined:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+  content: "Salir"; /* Truco avanzado: cambiar texto con CSS si quisieras, pero el icono ayuda */
+}
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
