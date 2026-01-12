@@ -5,54 +5,63 @@ import { db } from "../../firebase/config";
 import { 
   collection, 
   addDoc, 
+  updateDoc, 
+  doc, 
+  increment, 
   onSnapshot, 
   query, 
-  orderBy 
+  orderBy,
+  arrayUnion,  // IMPORTANTE: Para añadirte a la lista
+  arrayRemove  // IMPORTANTE: Para quitarte de la lista
 } from "firebase/firestore";
 import "./comunidad.css";
 
-// Iconos
+// Iconos Lucide (Coherencia visual)
 import { 
   Users, 
-  Tent, 
   Plus, 
   ArrowRight, 
-  MessageCircle, 
   Search,
-  School
+  School,
+  Check, 
+  X, // Para el botón de salir
+  Clapperboard, 
+  Gamepad2,     
+  BookOpen,     
+  Music         
 } from "lucide-react";
 
-// --- DATOS ESTÁTICOS PARA CLUBS OFICIALES ---
+// --- CLUBS OFICIALES ---
 const OFFICIAL_CLUBS = [
   {
     id: "cine",
     nombre: "Club de Cine",
-    desc: "Proyecciones semanales, debates y cultura cinematográfica.",
-    icon: "🎬",
+    desc: "Proyecciones semanales y debates.",
+    icon: <Clapperboard size={40} strokeWidth={1.5} />,
     horario: "Jueves 18:00",
     color: "#e11d48"
   },
   {
     id: "esports",
     nombre: "EUNEIZ Esports",
-    desc: "Equipo competitivo oficial. LoL, Valorant y FIFA.",
-    icon: "🎮",
+    desc: "Equipo competitivo: LoL, Valorant y FIFA.",
+    icon: <Gamepad2 size={40} strokeWidth={1.5} />,
     horario: "Martes 17:00",
     color: "#7c3aed"
   },
   {
     id: "lectura",
     nombre: "Club de Lectura",
-    desc: "Un espacio tranquilo para compartir tus libros favoritos.",
-    icon: "📚",
+    desc: "Comparte tus libros favoritos.",
+    icon: <BookOpen size={40} strokeWidth={1.5} />,
     horario: "Miércoles 19:00",
     color: "#059669"
   },
   {
     id: "musica",
     nombre: "Music Band",
-    desc: "Grupo de música de la universidad. ¡Buscamos bajista!",
-    icon: "🎸",
+    desc: "Grupo de música oficial.",
+    icon: <Music size={40} strokeWidth={1.5} />,
     horario: "Viernes 16:00",
     color: "#d97706"
   }
@@ -61,22 +70,23 @@ const OFFICIAL_CLUBS = [
 export default function Comunidad() {
   const { user } = useAuth();
   
-  // Estado Tabs
-  const [activeTab, setActiveTab] = useState("comunidades"); // 'comunidades' | 'clubs'
+  // Estados UI
+  const [activeTab, setActiveTab] = useState("comunidades");
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el buscador
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Estado Comunidades (Firebase)
+  // Datos Firebase
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // Estado Modal Crear
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Formulario Crear
   const [newComunidad, setNewComunidad] = useState({
     nombre: "",
     descripcion: "",
     contacto: ""
   });
 
-  // 1. Cargar Comunidades desde Firebase
+  // 1. CARGAR COMUNIDADES (Escucha en tiempo real)
   useEffect(() => {
     const q = query(collection(db, "communities"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -87,7 +97,7 @@ export default function Comunidad() {
     return () => unsubscribe();
   }, []);
 
-  // 2. Crear Nueva Comunidad
+  // 2. CREAR COMUNIDAD
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!newComunidad.nombre || !newComunidad.descripcion) return alert("Rellena los campos.");
@@ -97,16 +107,49 @@ export default function Comunidad() {
         ...newComunidad,
         createdAt: Date.now(),
         creatorEmail: user.email,
-        membersCount: 1 // Empieza con el creador
+        membersCount: 1,
+        members: [user.email] // Creamos el array con el creador ya dentro
       });
       setIsModalOpen(false);
       setNewComunidad({ nombre: "", descripcion: "", contacto: "" });
-      alert("✅ Comunidad creada con éxito");
     } catch (error) {
-      console.error(error);
+      console.error("Error creando comunidad:", error);
       alert("Error al crear comunidad");
     }
   };
+
+  // 3. UNIRSE / SALIR (Lógica Persistente)
+  const toggleMembership = async (community) => {
+    if (!user) return;
+
+    const comRef = doc(db, "communities", community.id);
+    // Comprobamos si el usuario ya está en la lista de miembros de ESTA comunidad
+    const isMember = community.members?.includes(user.email);
+
+    try {
+      if (isMember) {
+        // SALIR: Quitamos del array y restamos 1
+        await updateDoc(comRef, {
+          members: arrayRemove(user.email),
+          membersCount: increment(-1)
+        });
+      } else {
+        // UNIRSE: Añadimos al array y sumamos 1
+        await updateDoc(comRef, {
+          members: arrayUnion(user.email),
+          membersCount: increment(1)
+        });
+      }
+    } catch (error) {
+      console.error("Error al actualizar membresía:", error);
+    }
+  };
+
+  // 4. FILTRADO PARA EL BUSCADOR
+  const filteredCommunities = communities.filter(com => 
+    com.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    com.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="com-container">
@@ -115,7 +158,6 @@ export default function Comunidad() {
         <h1>Comunidades</h1>
         <p>Únete a grupos de estudiantes o participa en los clubs oficiales de EUNEIZ.</p>
         
-        {/* TABS DE NAVEGACIÓN */}
         <div className="com-tabs">
           <button 
             className={`com-tab-btn ${activeTab === 'comunidades' ? 'active' : ''}`}
@@ -132,54 +174,79 @@ export default function Comunidad() {
         </div>
       </header>
 
-      {/* CONTENIDO: PESTAÑA COMUNIDADES */}
+      {/* PESTAÑA: GRUPOS DE ALUMNOS */}
       {activeTab === 'comunidades' && (
         <div className="tab-content fade-in">
           
           <div className="com-actions-bar">
+             {/* BUSCADOR FUNCIONAL */}
              <div className="search-dummy">
                 <Search size={16} className="text-gray"/>
-                <span>Buscar grupos...</span>
+                <input 
+                  type="text" 
+                  placeholder="Buscar grupos..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{border:'none', outline:'none', width:'100%', color:'#64748b'}} 
+                />
              </div>
              <button className="btn-create-com" onClick={() => setIsModalOpen(true)}>
                 <Plus size={18}/> Crear Comunidad
              </button>
           </div>
 
-          {loading ? <p>Cargando grupos...</p> : (
+          {loading ? <p className="loading-text">Cargando grupos...</p> : (
             <div className="com-grid">
-              {communities.length === 0 ? (
+              {filteredCommunities.length === 0 ? (
                 <div className="empty-state-com">
-                   <p>No hay comunidades creadas aún. ¡Sé el primero!</p>
+                   <p>No se encontraron comunidades.</p>
                 </div>
               ) : (
-                communities.map(com => (
-                  <div key={com.id} className="com-card">
-                    <div className="com-card-top">
-                      <div className="com-avatar-placeholder">
-                        {com.nombre.charAt(0).toUpperCase()}
+                filteredCommunities.map(com => {
+                  // Verificamos en los datos reales de Firebase si el usuario está
+                  const isJoined = com.members?.includes(user?.email);
+                  const isCreator = com.creatorEmail === user?.email;
+
+                  return (
+                    <div key={com.id} className="com-card">
+                      <div className="com-card-top">
+                        <div className="com-avatar-placeholder">
+                          {com.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="com-badges">
+                          {/* Usamos el dato real membersCount o la longitud del array */}
+                          <span className="badge-member">👥 {com.members?.length || com.membersCount || 0}</span>
+                        </div>
                       </div>
-                      <div className="com-badges">
-                        <span className="badge-member">👥 {com.membersCount || 1}</span>
+                      
+                      <h3>{com.nombre}</h3>
+                      <p>{com.descripcion}</p>
+                      
+                      <div className="com-footer">
+                         <span className="creator-tag">
+                            {isCreator ? "👑 Admin" : `Por: ${com.creatorEmail?.split('@')[0]}`}
+                         </span>
+                         
+                         {/* BOTÓN UNIRSE / SALIR */}
+                         <button 
+                           className={`btn-join ${isJoined ? 'joined' : ''}`}
+                           onClick={() => toggleMembership(com)}
+                         >
+                           {isJoined ? (
+                             <><Check size={14}/> Unido</>
+                           ) : "Unirme"}
+                         </button>
                       </div>
                     </div>
-                    
-                    <h3>{com.nombre}</h3>
-                    <p>{com.descripcion}</p>
-                    
-                    <div className="com-footer">
-                       <span className="creator-tag">Por: {com.creatorEmail?.split('@')[0]}</span>
-                       <button className="btn-join">Unirme</button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
         </div>
       )}
 
-      {/* CONTENIDO: PESTAÑA CLUBS */}
+      {/* PESTAÑA: CLUBS OFICIALES */}
       {activeTab === 'clubs' && (
         <div className="tab-content fade-in">
           <div className="clubs-hero">
@@ -191,7 +258,9 @@ export default function Comunidad() {
             {OFFICIAL_CLUBS.map(club => (
               <Link to={`/comunidad/comunidades/clubs/${club.id}`} key={club.id} className="club-card-link">
                 <div className="club-card" style={{'--club-color': club.color}}>
-                  <div className="club-icon">{club.icon}</div>
+                  <div className="club-icon-wrapper" style={{color: club.color}}>
+                    {club.icon}
+                  </div>
                   <div className="club-info">
                     <h3>{club.nombre}</h3>
                     <p>{club.desc}</p>
@@ -222,7 +291,8 @@ export default function Comunidad() {
                 <label>Nombre del Grupo</label>
                 <input 
                   autoFocus
-                  placeholder="Ej: Senderismo, Java Lovers, Otakus..." 
+                  required
+                  placeholder="Ej: Senderismo, Java Lovers..." 
                   value={newComunidad.nombre}
                   onChange={e => setNewComunidad({...newComunidad, nombre: e.target.value})}
                 />
@@ -232,6 +302,7 @@ export default function Comunidad() {
                 <label>Descripción</label>
                 <textarea 
                   rows={3}
+                  required
                   placeholder="¿Qué vais a hacer en este grupo?" 
                   value={newComunidad.descripcion}
                   onChange={e => setNewComunidad({...newComunidad, descripcion: e.target.value})}
@@ -239,22 +310,21 @@ export default function Comunidad() {
               </div>
 
               <div className="form-group">
-                <label>Método de contacto (Email, Discord, WhatsApp...)</label>
+                <label>Contacto (Link grupo WhatsApp/Discord)</label>
                 <input 
-                  placeholder="Enlace o correo para unirse" 
+                  placeholder="https://chat.whatsapp.com/..." 
                   value={newComunidad.contacto}
                   onChange={e => setNewComunidad({...newComunidad, contacto: e.target.value})}
                 />
               </div>
 
               <button type="submit" className="btn-submit-com">
-                🚀 Lanzar Comunidad
+                🚀 Crear Grupo
               </button>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 }

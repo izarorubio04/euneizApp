@@ -1,125 +1,312 @@
-.rooms-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: "Inter", sans-serif;
+/* src/pages/Rooms/Rooms.css */
+:root {
+  --primary: #000B3D;
+  --accent: #F1595C;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --bg-gray: #f8fafc;
+  --text-main: #1e293b;
+}
+
+.rooms-container {
+  padding-bottom: 80px;
   animation: fadeIn 0.4s ease-out;
 }
 
-.rooms-header {
-  background: white;
-  padding: 2rem;
+/* HEADER */
+.rooms-header-card {
   border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  padding: 2rem;
   margin-bottom: 2rem;
-}
-
-.rooms-header h1 {
-  color: #003049;
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-}
-
-.rooms-filters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-.rooms-field {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.rooms-field label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
+.rooms-header-text h1 { margin: 0; color: var(--primary); font-size: 1.8rem; font-weight: 800; }
+.rooms-header-text p { margin: 0.5rem 0 0; color: #64748b; }
+.rooms-header-icon { 
+  color: var(--accent); 
+  background: #fff1f2; 
+  padding: 1rem; 
+  border-radius: 50%; 
 }
 
-.rooms-input {
-  padding: 0.7rem;
-  border-radius: 10px;
-  border: 2px solid #f1f5f9;
-  background: #f8fafc;
-  outline: none;
-}
-
-.rooms-input:focus {
-  border-color: #4e8df5;
-}
-
-/* Grid de Salas */
-.rooms-grid {
+/* LAYOUT 2 COLUMNAS */
+.rooms-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 2fr 1fr; /* Panel grande izquierda, Tickets derecha */
   gap: 2rem;
 }
 
-.room-card {
+@media (max-width: 900px) {
+  .rooms-layout { grid-template-columns: 1fr; }
+}
+
+/* PANEL IZQUIERDO */
+.booking-panel {
   background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease;
-  border: 2px solid transparent;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
 
-.room-card:hover { transform: translateY(-5px); }
-.room-card.is-reserved { border-color: #ff6b6b; }
+.control-group { margin-bottom: 2rem; }
 
-.room-img {
+.control-label {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; color: var(--primary); margin-bottom: 1rem;
+}
+
+.date-input {
   width: 100%;
-  height: 160px;
-  object-fit: cover;
-}
-
-.room-body { padding: 1.5rem; }
-
-/* Bloques de reserva */
-.reservation-block {
-  background: #f1f5f9;
-  padding: 1rem;
+  padding: 0.8rem;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  margin-bottom: 0.8rem;
-  font-size: 0.9rem;
+  font-family: inherit;
+  font-size: 1rem;
 }
 
-.reservation-block.editing {
-  background: #fffbe6;
-  border: 1px solid #f59e0b;
+.warning-badge {
+  margin-top: 10px;
+  background: #fef2f2; color: #ef4444;
+  padding: 0.8rem; border-radius: 8px;
+  display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
 }
 
-.res-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+/* TIME GRID */
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.8rem;
 }
 
-.btn-res {
-  flex: 1;
-  padding: 0.5rem;
-  border: none;
+.time-chip {
+  background: var(--bg-gray);
+  border: 1px solid transparent;
+  padding: 0.6rem;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 0.8rem;
+  font-weight: 600; color: #64748b;
+  transition: all 0.2s;
 }
 
-.btn-res-cancel { background: #fee2e2; color: #991b1b; }
-.btn-res-edit { background: #fef3c7; color: #92400e; }
-.btn-reserve-main {
-  width: 100%;
-  background: #003049;
-  color: white;
-  padding: 0.8rem;
+.time-chip:hover { background: #e2e8f0; }
+.time-chip.selected { 
+  background: var(--primary); color: white; 
+  box-shadow: 0 4px 10px rgba(0,11,61,0.2);
+}
+
+/* ROOMS GRID */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+}
+
+.room-card {
+  aspect-ratio: 1/1;
+  border: 2px solid #e2e8f0;
+  background: white;
+  border-radius: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.room-card:hover:not(:disabled) {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.room-number { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+.room-status { font-size: 0.7rem; font-weight: 700; color: #94a3b8; margin-top: 4px; }
+
+/* Estados Aula */
+.room-card.taken {
+  background: #f1f5f9; border-color: transparent; cursor: not-allowed; opacity: 0.7;
+}
+.room-card.taken .room-number { color: #cbd5e1; }
+.room-card.taken .room-status { color: #ef4444; }
+
+.room-card.mine {
+  background: #ecfdf5; border-color: var(--success);
+}
+.room-card.mine .room-number { color: var(--success); }
+.room-card.mine .room-status { color: var(--success); }
+
+.closed-state {
+  text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;
+  background: #f8fafc; border-radius: 12px;
+}
+
+/* PANEL DERECHO: TICKETS */
+.my-tickets-panel h3 {
+  margin: 0 0 1.5rem 0; color: var(--primary); display: flex; align-items: center; gap: 8px;
+}
+
+.tickets-list {
+  display: flex; flex-direction: column; gap: 1rem;
+}
+
+.ticket-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-left: 5px solid var(--accent); /* Borde lateral rojo */
   border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.ticket-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.8rem; border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.8rem;
+}
+
+.ticket-room { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+
+.btn-cancel-ticket {
+  background: none; border: none; color: #94a3b8; cursor: pointer;
+}
+.btn-cancel-ticket:hover { color: #ef4444; }
+
+.ticket-body { margin-bottom: 1rem; }
+
+.ticket-info {
+  display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;
+}
+
+.ticket-code-box {
+  background: #f1f5f9;
+  padding: 0.8rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.code-label { display: block; font-size: 0.65rem; color: #64748b; letter-spacing: 1px; margin-bottom: 4px; }
+.code-value { font-family: monospace; font-size: 1.4rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
+
+.ticket-footer {
+  font-size: 0.75rem; color: var(--success); font-weight: 600; display: flex; align-items: center; gap: 6px;
+}
+
+.info-box-return {
+  margin-top: 2rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #b45309;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* AÑADIR A PARTIR DE AQUÍ */
+
+/* === ESTILOS MODO ADMIN === */
+
+.admin-rooms-panel {
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.admin-controls {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: flex-end;
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 16px;
+}
+
+.search-box-admin {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  gap: 10px;
+}
+.search-box-admin input {
+  border: none; outline: none; width: 100%; font-size: 0.95rem;
+}
+
+/* TABLA ADMIN */
+.admin-table-container h3 { margin-top: 0; color: var(--primary); }
+
+.rooms-admin-table {
+  width: 100%;
+  border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.btn-reserve-main:disabled { background: #cbd5e1; cursor: not-allowed; }
+.rooms-admin-table th {
+  text-align: left;
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border-bottom: 2px solid #f1f5f9;
+}
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.rooms-admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+/* Filas según estado */
+.row-active { background-color: #f0fdf4; }
+.row-finished { opacity: 0.6; }
+
+.font-bold { font-weight: 700; color: var(--primary); }
+.font-mono { font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; color: var(--accent); font-weight: 700; }
+.text-small { font-size: 0.9rem; color: #475569; }
+.text-muted { font-size: 0.8rem; color: #94a3b8; font-style: italic; }
+
+.badge-room {
+  background: white; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;
+}
+
+/* Pills de estado */
+.status-pill {
+  display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+}
+.status-pill.pending { background: #fef3c7; color: #b45309; }
+.status-pill.active { background: #dcfce7; color: #166534; }
+.status-pill.finished { background: #f1f5f9; color: #64748b; }
+
+/* Botones de Acción Admin */
+.action-buttons { display: flex; gap: 8px; }
+
+.btn-admin-action {
+  border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
+
+.btn-admin-action.give {
+  background: var(--primary); color: white;
+}
+.btn-admin-action.give:hover { background: #1e3a8a; }
+
+.btn-admin-action.return {
+  background: white; border: 1px solid var(--success); color: var(--success);
+}
+.btn-admin-action.return:hover { background: var(--success); color: white; }
+
+/* Stats footer */
+.admin-stats {
+  display: flex; gap: 1rem; margin-top: 2rem;
+}
+.stat-card {
+  background: #f8fafc; padding: 1rem 1.5rem; border-radius: 12px; flex: 1; border: 1px solid #e2e8f0;
+}
+.stat-card h4 { margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #64748b; }
+.stat-card span { font-size: 2rem; font-weight: 800; color: var(--primary); }
