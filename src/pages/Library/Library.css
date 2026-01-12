@@ -344,3 +344,211 @@
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* MODO ADMIN */
+.admin-lib-panel {
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.admin-controls { margin-bottom: 2rem; }
+
+/* Reutilizamos clases de Rooms.css si es posible, si no las definimos aqui */
+.rooms-admin-table { width: 100%; border-collapse: collapse; }
+.rooms-admin-table th { text-align: left; padding: 1rem; color: #64748b; border-bottom: 2px solid #f1f5f9; }
+.rooms-admin-table td { padding: 1rem; border-bottom: 1px solid #f1f5f9; }
+
+.status-pill { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.status-pill.pending { background: #fef3c7; color: #b45309; }
+.status-pill.active { background: #dcfce7; color: #166534; }
+
+.btn-admin-action { border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn-admin-action.give { background: var(--primary); color: white; }
+.btn-admin-action.return { background: white; border: 1px solid #10b981; color: #10b981; }
+
+.font-mono { font-family: monospace; letter-spacing: 1px; color: var(--accent); font-weight: 700; }
+
+/* MIS RESERVAS (TICKETS) */
+.my-res-container { padding: 1rem 0; }
+.res-tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+.res-ticket {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex; gap: 1rem;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.res-ticket.active { border-left: 5px solid #10b981; }
+.res-ticket.reserved { border-left: 5px solid #f59e0b; }
+
+.ticket-icon {
+  background: #f8fafc; width: 50px; height: 50px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ticket-info h4 { margin: 0 0 4px 0; font-size: 1rem; color: var(--text-main); }
+.ticket-info p { margin: 0 0 1rem 0; font-size: 0.85rem; color: var(--text-light); }
+
+.ticket-code {
+  background: #f1f5f9; padding: 6px 12px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: monospace; font-weight: 700; color: var(--primary); font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+.ticket-status-text { display: block; font-size: 0.75rem; color: #64748b; font-style: italic; }
+
+.btn-cancel-res {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; color: #94a3b8; cursor: pointer;
+}
+.btn-cancel-res:hover { color: #ef4444; }
+
+.my-res-container { padding: 1rem 0; }
+.res-tickets-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+  gap: 1.5rem; 
+}
+
+.res-ticket-clean {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.res-ticket-clean:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border-color: #cbd5e1;
+}
+
+.ticket-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.2rem;
+}
+
+.ticket-title-clean {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.3;
+  padding-right: 1.5rem; /* Espacio para el botón de cerrar */
+  
+  /* Truncate text if too long */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.btn-cancel-clean {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  margin-top: -4px;
+  margin-right: -4px;
+}
+
+.btn-cancel-clean:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.ticket-author-clean {
+  margin: 0 0 1.2rem 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.ticket-body-clean {
+  margin-bottom: 1.2rem;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  text-align: center;
+}
+
+.code-box-clean {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.code-label-clean {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.code-value-clean {
+  font-family: 'Courier New', monospace; /* Monospaced para aspecto de código */
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 2px;
+}
+
+.ticket-footer-clean {
+  margin-top: auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-text-pending {
+  color: #d97706; /* Ámbar oscuro, legible */
+}
+
+.status-text-active {
+  color: #10b981; /* Verde */
+}
+
+/* Estilo para la fecha límite */
+.due-date-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff7ed; /* Fondo naranja muy suave */
+  border: 1px solid #fdba74; /* Borde naranja */
+  color: #c2410c; /* Texto naranja oscuro */
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: fit-content;
+}
+
+.due-date-indicator .icon {
+  font-size: 1.1rem;
+}
+
+.due-date-indicator strong {
+  color: #ea580c;
+  font-weight: 700;
+}
