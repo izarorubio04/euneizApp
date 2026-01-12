@@ -1,34 +1,280 @@
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f0f2f5;
+:root {
+  --primary: #000B3D; /* Azul oscuro Euneiz */
+  --accent: #F1595C;  /* Rojo/Coral Euneiz */
+  --text-main: #1e293b;
+  --text-light: #64748b;
+  --bg-input: #f8fafc;
 }
 
-.login-form {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.login-wrapper {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+  padding: 1rem;
+}
+
+/* === TARJETA PRINCIPAL === */
+.login-card {
+  display: flex;
+  background: white;
+  width: 100%;
+  max-width: 900px;
+  min-height: 550px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 11, 61, 0.08);
+  overflow: hidden;
+}
+
+/* === LADO IZQUIERDO: BRANDING === */
+.login-brand-side {
+  flex: 1;
+  background: var(--primary);
+  color: white;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-content {
+  position: relative;
+  z-index: 2;
+}
+
+.logo-badge {
+  display: inline-block;
+  background: var(--accent);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.login-brand-side h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.brand-tagline {
+  font-size: 1.1rem;
+  opacity: 0.8;
+  margin: 1rem 0 3rem 0;
+  font-weight: 300;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  width: 300px;
+  font-size: 0.9rem;
+  opacity: 0.9;
 }
 
-.error-msg {
-  color: red;
-  font-size: 0.8rem;
-  background: #ffe6e6;
-  padding: 5px;
-  border-radius: 4px;
+/* Decoración círculos */
+.brand-circles .circle {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  opacity: 0.03;
+}
+.c1 { width: 300px; height: 300px; top: -50px; right: -100px; }
+.c2 { width: 500px; height: 500px; bottom: -150px; left: -100px; }
+
+/* === LADO DERECHO: FORMULARIO === */
+.login-form-side {
+  flex: 1.2;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.toggle-text {
+.form-header {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.form-header h2 { font-size: 1.8rem; color: var(--primary); margin: 0; font-weight: 800; }
+.form-header p { color: var(--text-light); margin: 0.5rem 0 0 0; }
+
+/* Alerta Prototipo */
+.prototype-alert {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  padding: 0.8rem;
+  border-radius: 12px;
   font-size: 0.8rem;
-  color: #007bff;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+.alert-icon { flex-shrink: 0; margin-top: 2px; }
+
+/* Inputs */
+.input-group { margin-bottom: 1.2rem; }
+.input-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.8rem; /* Espacio para icono */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: var(--bg-input);
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 11, 61, 0.1);
+}
+
+/* Botón Login */
+.btn-login {
+  width: 100%;
+  padding: 0.9rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-top: 1rem;
+}
+
+.btn-login:hover:not(:disabled) {
+  background: #1e3a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 11, 61, 0.2);
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Footer y Toggle */
+.form-footer {
+  margin-top: 1.5rem;
   text-align: center;
-  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.btn-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 5px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.btn-toggle:hover { color: #d93d40; }
+
+.error-banner {
+  background: #fef2f2;
+  color: #ef4444;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  border: 1px solid #fecaca;
+}
+
+.footer-credits {
+  margin-top: 2rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* Responsive Móvil */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .login-brand-side {
+    padding: 2rem;
+    text-align: center;
+  }
+  .feature-list { display: none; }
+  .login-form-side {
+    padding: 2rem;
+  }
+}/* CAMBIO: Ajuste para el botón de mostrar contraseña */
+.btn-show-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%); /* Centrado vertical perfecto */
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.btn-show-password:hover {
+  color: var(--primary);
+}
+
+/* Asegura que el icono de la izquierda (Lock/Mail) también esté centrado */
+.field-icon {
+  top: 50%;
+  transform: translateY(-50%);
 }
