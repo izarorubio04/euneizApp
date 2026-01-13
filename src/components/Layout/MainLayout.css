@@ -218,3 +218,106 @@
   /* Usamos la animación global definida en Index.css */
   animation: fadeIn 0.4s ease-out;
 }
+
+/* === ESTILOS RESPONSIVE (Móvil) === */
+
+/* Por defecto, ocultamos los elementos móviles en escritorio */
+.mobile-menu-btn {
+  display: none;
+}
+.sidebar-overlay {
+  display: none;
+}
+.close-sidebar-btn {
+  display: none; /* Oculto en escritorio */
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Cuando la pantalla es menor a 768px (Tablets y Móviles) */
+@media (max-width: 768px) {
+  
+  /* 1. Ajustar el contenedor principal */
+  .layout-container {
+    flex-direction: column; /* Cambia flujo a columna */
+    position: relative;
+  }
+
+  /* 2. Botón Hamburguesa Flotante */
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1000; /* Por encima de todo */
+    background-color: #000B3D;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    cursor: pointer;
+  }
+
+  /* 3. Transformar la Sidebar en un "Drawer" (Cajón) */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh; /* Ocupa toda la altura */
+    width: 280px;  /* Ancho fijo para móvil */
+    margin: 0;     /* Quitamos el margen flotante de escritorio */
+    border-radius: 0; /* Quitamos bordes redondeados */
+    z-index: 2000; /* Muy por encima */
+    
+    /* Animación de entrada/salida */
+    transform: translateX(-110%); /* Oculto a la izquierda */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Clase que se añade con React cuando abrimos el menú */
+  .sidebar.open {
+    transform: translateX(0); /* Lo traemos a la vista */
+    box-shadow: 10px 0 30px rgba(0,0,0,0.3);
+  }
+
+  /* Ajuste del header dentro del sidebar para acomodar la X */
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem; /* Ajuste visual */
+  }
+
+  .close-sidebar-btn {
+    display: block; /* Visible solo en móvil */
+  }
+
+  /* 4. Overlay Oscuro de fondo */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparente */
+    z-index: 1500; /* Debajo del sidebar, encima del contenido */
+    backdrop-filter: blur(2px); /* Efecto borroso opcional */
+    animation: fadeIn 0.3s ease;
+  }
+
+  /* 5. Ajustar el área de contenido */
+  .content-area {
+    width: 100%;
+    margin-top: 60px; /* Espacio para no tapar contenido con el botón hamburguesa */
+  }
+  
+  .content-wrapper {
+    padding: 1rem; /* Menos padding en móvil */
+  }
+}
