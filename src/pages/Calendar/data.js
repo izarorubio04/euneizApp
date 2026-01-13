@@ -1,5 +1,3 @@
-// src/pages/Calendar/data.js
-
 // Tipos de eventos para asignar colores
 export const EVENT_TYPES = {
   academic: { label: "Académico", color: "#000B3D" }, // Azul Euneiz

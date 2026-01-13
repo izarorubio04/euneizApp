@@ -1,32 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+
+// Firebase imports:
 import { db } from "../../firebase/config";
 import { 
-  collection, 
-  addDoc, 
-  deleteDoc, 
-  updateDoc, 
-  doc, 
-  onSnapshot, 
-  query, 
-  orderBy 
+  collection, addDoc, deleteDoc, updateDoc, 
+  doc, onSnapshot, query, orderBy 
 } from "firebase/firestore";
+
+// Componentes propios
+import PageHeader from "../../components/UI/PageHeader";
+import Modal from "../../components/UI/Modal";
 import "./Projects.css";
 
-// ICONOS LUCIDE (Estilo unificado)
+// Iconos de la interfaz (Lucide es más ligero que FontAwesome)
 import { 
-  Search, 
-  Filter, 
-  Plus, 
-  ExternalLink, 
-  Users, 
-  CheckCircle, 
-  Trash2,
-  Clock,
-  ChevronDown,
-  Image as ImageIcon
+  Search, Filter, Plus, ExternalLink, Users, 
+  CheckCircle, Trash2, Clock, ChevronDown, Image as ImageIcon
 } from "lucide-react";
 
+// Lista estática de grados para el select (así es fácil añadir nuevos en el futuro)
 const DEGREES = [
   "Multimedia",
   "Desarrollo de Videojuegos",
@@ -37,62 +30,75 @@ const DEGREES = [
 ];
 
 export default function Proyectos() {
-  const { user,isAdmin } = useAuth();
+  // Obtenemos el usuario actual y si es admin desde nuestro contexto personalizado
+  const { user, isAdmin } = useAuth();
 
-  // Estados
+  // --- ESTADOS LOCALES ---
+  // Guardamos la lista completa de proyectos traída de Firebase
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Filtros
+  // Estados para los filtros (Búsqueda por texto y Select de grado)
   const [searchText, setSearchText] = useState("");
   const [filterDegree, setFilterDegree] = useState("");
 
-  // Modal
+  // Control del Modal de "Subir Proyecto"
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Estado del formulario: Inicializamos vacío
   const [form, setForm] = useState({
-    title: "",
-    desc: "",
-    degree: "",
-    creators: "",
-    link: "",
-    image: ""
+    title: "", desc: "", degree: "", creators: "", link: "", image: ""
   });
 
-  // Carga de datos
+  // 1. CARGA DE DATOS (Real-time)
+  // Usamos useEffect con onSnapshot para mantener la lista actualizada al momento.
+  // Si un compañero sube algo, me aparece sin recargar la página.
   useEffect(() => {
+    // Ordenamos por fecha descendente para que los nuevos salgan arriba
     const q = query(collection(db, "projects"), orderBy("date", "desc"));
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setProjects(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // Mapeamos los documentos para incluir el ID de Firestore en nuestro objeto
+      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProjects(docs);
       setLoading(false);
     });
+    
+    // Cleanup: Desuscribirse al desmontar para evitar fugas de memoria
     return () => unsubscribe();
   }, []);
 
-  // Lógica de filtrado y visibilidad (Admin ve pendientes, usuarios no)
+  // 2. LÓGICA DE FILTRADO Y PERMISOS
+  // Filtramos la lista 'projects' en cada render según los inputs.
+  // Es mejor filtrar en cliente que hacer muchas peticiones a Firebase si no hay miles de datos.
   const filteredProjects = projects.filter(p => {
-    // 1. Visibilidad
+    // Control de visibilidad para proyectos pendientes:
+    // Solo se ven si ya están aprobados, O si soy Admin, O si soy el dueño del proyecto.
     const isOwner = user && p.authorEmail === user.email;
     if (p.status === "pending" && !isAdmin && !isOwner) return false;
 
-    // 2. Filtro Texto (Búsqueda amplia)
+    // Filtro de texto (Título, descripción o autores) - Case insensitive
     const textMatch = 
       p.title.toLowerCase().includes(searchText.toLowerCase()) ||
       p.desc.toLowerCase().includes(searchText.toLowerCase()) ||
       p.creators.toLowerCase().includes(searchText.toLowerCase());
 
-    // 3. Filtro Grado
+    // Filtro de grado (Si hay uno seleccionado)
     const degreeMatch = filterDegree ? p.degree === filterDegree : true;
 
     return textMatch && degreeMatch;
   });
 
-  // Acciones
+  // 3. HANDLERS (Manejadores de eventos)
+  
+  // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.desc || !form.degree || !form.link) return alert("Rellena los campos obligatorios");
 
     try {
-      const initialStatus = isAdmin ? "approved" : "pending"; // Admin publica directo, alumno solicita
+      // Si soy admin, se aprueba directo. Si soy alumno, va a moderación.
+      const initialStatus = isAdmin ? "approved" : "pending"; 
 
       await addDoc(collection(db, "projects"), {
         ...form,
@@ -102,19 +108,27 @@ export default function Proyectos() {
       });
 
       setIsModalOpen(false);
+      // Limpiamos form
       setForm({ title: "", desc: "", degree: "", creators: "", link: "", image: "" });
-      if (initialStatus === "pending") alert("✅ Solicitud enviada. Un administrador revisará tu proyecto.");
+      
+      if (initialStatus === "pending") {
+        alert("✅ Solicitud enviada. Un administrador revisará tu proyecto.");
+      }
 
     } catch (err) {
-      console.error(err);
-      alert("Error al publicar");
+      console.error("Error al publicar:", err);
+      alert("Hubo un error al guardar el proyecto.");
     }
   };
 
+  // Borrar proyecto (Solo admins o el dueño)
   const handleDelete = async (id) => {
-    if (window.confirm("¿Eliminar proyecto?")) await deleteDoc(doc(db, "projects", id));
+    if (window.confirm("¿Estás seguro de eliminar este proyecto permanentemente?")) {
+      await deleteDoc(doc(db, "projects", id));
+    }
   };
 
+  // Aprobar proyecto (Solo admins)
   const handleApprove = async (id) => {
     await updateDoc(doc(db, "projects", id), { status: "approved" });
   };
@@ -123,13 +137,14 @@ export default function Proyectos() {
 
   return (
     <div className="proj-container">
-      {/* HEADER */}
-      <header className="proj-header">
-        <h1>Proyectos de Alumnos</h1>
-        <p>Galería de trabajos, TFG y portfolio de la comunidad EUNEIZ.</p>
-      </header>
+      
+      {/* HEADER: Componente reutilizable para mantener consistencia visual */}
+      <PageHeader 
+        title="Proyectos de Alumnos" 
+        subtitle="Galería de trabajos, TFG y portfolio de la comunidad EUNEIZ." 
+      />
 
-      {/* BARRA DE FILTROS (Igual a Biblioteca) */}
+      {/* BARRA DE HERRAMIENTAS (Buscador + Filtro) */}
       <div className="proj-filters-bar">
         <div className="search-box">
           <Search size={18} className="search-icon"/>
@@ -151,22 +166,23 @@ export default function Proyectos() {
         </div>
       </div>
 
-      {/* GRID DE TARJETAS (Ahora 1 columna) */}
+      {/* GRID DE RESULTADOS */}
       <div className="proj-grid">
         {filteredProjects.map(project => (
           <div key={project.id} className={`proj-card ${project.status === 'pending' ? 'is-pending' : ''}`}>
             
-            {/* IZQUIERDA: IMAGEN */}
+            {/* Columna Izquierda: Imagen o Placeholder */}
             <div className="card-media">
               {project.image ? (
                 <img src={project.image} alt={project.title} />
               ) : (
                 <div className="placeholder-img"><ImageIcon size={40} opacity={0.3} /></div>
               )}
+              {/* Badge visual si está pendiente de aprobar */}
               {project.status === 'pending' && <span className="badge-pending">En Revisión</span>}
             </div>
 
-            {/* DERECHA: INFO */}
+            {/* Columna Derecha: Información */}
             <div className="card-content">
               <div className="card-meta-top">
                 <span className="degree-tag">{project.degree}</span>
@@ -186,11 +202,11 @@ export default function Proyectos() {
                   Ver Proyecto <ExternalLink size={16} />
                 </a>
 
-                {/* ACCIONES ADMIN / OWNER */}
+                {/* Botones de Admin / Dueño */}
                 {(isAdmin || (user && project.authorEmail === user.email)) && (
                   <div className="admin-actions-mini">
                     {isAdmin && project.status === 'pending' && (
-                      <button className="btn-icon approve" onClick={() => handleApprove(project.id)} title="Aprobar">
+                      <button className="btn-icon approve" onClick={() => handleApprove(project.id)} title="Aprobar publicación">
                         <CheckCircle size={20} />
                       </button>
                     )}
@@ -204,76 +220,79 @@ export default function Proyectos() {
           </div>
         ))}
         
+        {/* Feedback si no hay resultados */}
         {filteredProjects.length === 0 && (
           <div className="empty-state">No se encontraron proyectos con estos filtros.</div>
         )}
       </div>
 
-      {/* BOTÓN FLOTANTE (FAB) */}
+      {/* BOTÓN FLOTANTE (FAB) PARA AÑADIR */}
       <button className="fab-add" onClick={() => setIsModalOpen(true)} title="Subir Proyecto">
         <Plus size={32} />
       </button>
 
       {/* MODAL DE SUBIDA */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}>✕</button>
-            <h2>Subir Proyecto</h2>
-            <p className="modal-subtitle">Comparte tu trabajo con la comunidad</p>
-            
-            <form onSubmit={handleSubmit} className="proj-form">
-              <div className="form-group">
-                <label>Título del proyecto</label>
-                <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="Ej: Rediseño App EUNEIZ" required />
-              </div>
-              
-              <div className="form-row">
-                 <div className="form-group">
-                    <label>Grado</label>
-                    <div className="select-wrapper-form">
-                        <select value={form.degree} onChange={e => setForm({...form, degree: e.target.value})} required>
-                        <option value="">Selecciona...</option>
-                        {DEGREES.map(d => <option key={d} value={d}>{d}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="arrow-form"/>
-                    </div>
-                 </div>
-                 <div className="form-group">
-                    <label>Creador(es)</label>
-                    <input value={form.creators} onChange={e => setForm({...form, creators: e.target.value})} placeholder="Nombres y Apellidos" />
-                 </div>
-              </div>
-
-              <div className="form-group">
-                <label>Descripción completa</label>
-                {/* Aumentado a 5 filas para mejor escritura */}
-                <textarea rows={5} value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} placeholder="Describe detalladamente de qué trata el proyecto..." required />
-              </div>
-
-              <div className="form-group">
-                <label>Enlace al proyecto (Web, PDF, GitHub...)</label>
-                <div className="input-icon-group">
-                    <ExternalLink size={16} className="input-icon"/>
-                    <input value={form.link} onChange={e => setForm({...form, link: e.target.value})} placeholder="https://..." required />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>URL Imagen Portada (Opcional)</label>
-                <div className="input-icon-group">
-                    <ImageIcon size={16} className="input-icon"/>
-                    <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} placeholder="https://..." />
-                </div>
-              </div>
-
-              <button type="submit" className="btn-submit-proj">
-                {isAdmin ? "Publicar Ahora" : "Enviar Solicitud"}
-              </button>
-            </form>
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Subir Proyecto"
+      >
+        <p className="modal-subtitle">Comparte tu trabajo con la comunidad</p>
+        
+        <form onSubmit={handleSubmit} className="proj-form">
+          <div className="form-group">
+            <label>Título del proyecto</label>
+            <input 
+              value={form.title} 
+              onChange={e => setForm({...form, title: e.target.value})} 
+              placeholder="Ej: Rediseño App EUNEIZ" 
+              required 
+            />
           </div>
-        </div>
-      )}
+          
+          <div className="form-row">
+             <div className="form-group">
+                <label>Grado</label>
+                <div className="select-wrapper-form">
+                    <select value={form.degree} onChange={e => setForm({...form, degree: e.target.value})} required>
+                    <option value="">Selecciona...</option>
+                    {DEGREES.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                    <ChevronDown size={14} className="arrow-form"/>
+                </div>
+             </div>
+             <div className="form-group">
+                <label>Creador(es)</label>
+                <input value={form.creators} onChange={e => setForm({...form, creators: e.target.value})} placeholder="Nombres y Apellidos" />
+             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Descripción completa</label>
+            <textarea rows={5} value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} placeholder="Describe detalladamente de qué trata el proyecto..." required />
+          </div>
+
+          <div className="form-group">
+            <label>Enlace al proyecto (Web, PDF, GitHub...)</label>
+            <div className="input-icon-group">
+                <ExternalLink size={16} className="input-icon"/>
+                <input value={form.link} onChange={e => setForm({...form, link: e.target.value})} placeholder="https://..." required />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>URL Imagen Portada (Opcional)</label>
+            <div className="input-icon-group">
+                <ImageIcon size={16} className="input-icon"/>
+                <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} placeholder="https://..." />
+            </div>
+          </div>
+
+          <button type="submit" className="btn-submit-proj">
+            {isAdmin ? "Publicar Ahora" : "Enviar Solicitud"}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 }

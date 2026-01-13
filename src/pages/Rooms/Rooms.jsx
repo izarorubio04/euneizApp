@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+// Firebase:
 import { db } from "../../firebase/config";
 import { 
   collection, addDoc, query, where, onSnapshot, 
   deleteDoc, doc, updateDoc 
 } from "firebase/firestore";
-import "./Rooms.css";
 
-// ICONOS
+// UI Imports
+import PageHeader from "../../components/UI/PageHeader"; 
+import "./Rooms.css";
+// Iconos de Lucide (más limpios que los emojis)
 import { 
   Calendar, Clock, MapPin, Key, 
-  CheckCircle, AlertCircle, X, QrCode,
-  Search, User, ArrowRight
+  CheckCircle, AlertCircle, X, QrCode, Search, User
 } from "lucide-react";
 
-// GENERADOR DE AULAS
+// --- CONFIGURACIÓN DE AULAS ---
+// En lugar de escribir las aulas a mano, uso un generador.
+// Así, si la uni construye una 3ª planta, solo cambio la constante FLOORS.
 const FLOORS = [1, 2];
 const ROOMS_PER_FLOOR = 5; 
+
 const generateRooms = () => {
   let rooms = [];
   FLOORS.forEach(floor => {
@@ -28,6 +33,7 @@ const generateRooms = () => {
 };
 const ALL_ROOMS = generateRooms();
 
+// Horarios fijos de reserva (de 8am a 8pm)
 const TIME_SLOTS = [
   "08:00", "09:00", "10:00", "11:00", "12:00", 
   "13:00", "14:00", "15:00", "16:00", "17:00", 
@@ -37,79 +43,96 @@ const TIME_SLOTS = [
 export const Rooms = () => {
   const { user, isAdmin } = useAuth();
   
-  // --- ESTADOS ---
+  // --- ESTADOS LOCALES ---
+  // Fecha seleccionada (por defecto hoy)
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedTime, setSelectedTime] = useState("");
   
-  const [reservationsToday, setReservationsToday] = useState([]); // Todas las del día (para admins y ocupación)
-  const [myActiveReservations, setMyActiveReservations] = useState([]); // Solo las del alumno
+  // Estados de datos (Arrays que vienen de Firebase)
+  const [reservationsToday, setReservationsToday] = useState([]); // Para pintar el mapa de ocupación
+  const [myActiveReservations, setMyActiveReservations] = useState([]); // Historial del alumno
   
-  const [adminSearch, setAdminSearch] = useState(""); // Buscador para admin (código o email)
+  const [adminSearch, setAdminSearch] = useState(""); 
   // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
-  // --- 1. CARGA DE DATOS GENERALES (Para ocupación y Admin View) ---
+  // 1. EFECTO: Ocupación en Tiempo Real (La clave del sistema)
+  // Usamos onSnapshot para escuchar cambios. Si otro alumno reserva el "Aula 1.1",
+  // mi array 'reservationsToday' se actualiza solo y el botón se deshabilita en mi pantalla.
+  // Esto evita (casi totalmente) las reservas duplicadas.
   useEffect(() => {
     setLoading(true);
-    // Escuchamos TODAS las reservas de la fecha seleccionada
+    // Consultamos solo las reservas de la fecha que estoy mirando
     const q = query(collection(db, "reservations"), where("date", "==", date));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setReservationsToday(snapshot.docs.map(d => ({id: d.id, ...d.data()})));
       setLoading(false);
     });
+    
+    // Limpiamos el listener al desmontar o cambiar de fecha
     return () => unsubscribe();
   }, [date]);
 
-  // --- 2. CARGA DE DATOS ALUMNO (Mis tickets) ---
+  // 2. EFECTO: Mis Reservas (Solo para alumnos)
+  // Carga las reservas activas del usuario logueado para mostrarlas en el panel lateral.
   useEffect(() => {
-    if(!user?.email || isAdmin) return; // Si es admin, no necesita cargar "mis tickets" personales
+    if(!user?.email || isAdmin) return; 
     
     const today = new Date().toISOString().split('T')[0];
     const q = query(collection(db, "reservations"), where("userEmail", "==", user.email));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allDocs = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-      // Filtramos en cliente para evitar índices complejos
+      
+      // Filtro en cliente: Solo futuras/hoy y que no estén finalizadas
       const active = allDocs.filter(r => r.date >= today && r.status !== 'finished');
       
+      // Las ordeno por fecha y hora para que salgan cronológicamente
       active.sort((a, b) => {
         if (a.date !== b.date) return a.date.localeCompare(b.date);
         return a.time.localeCompare(b.time);
       });
+      
       setMyActiveReservations(active);
     });
 
     return () => unsubscribe();
   }, [user, isAdmin]);
 
-  // --- HELPERS ---
+  // --- HELPERS (Utilidades) ---
+  
+  // Validar fines de semana
   const isWeekend = (dateString) => {
     const d = new Date(dateString);
     const day = d.getDay();
-    return day === 0 || day === 6; 
+    return day === 0 || day === 6; // 0=Domingo, 6=Sábado
   };
 
+  // Generar código de llave único (Simulación)
   const generateCode = () => {
     const random = Math.random().toString(36).substring(2, 5).toUpperCase();
     return `KEY-${random}`;
   };
 
-  // --- ACCIONES ALUMNO ---
+  // --- HANDLERS ALUMNO (Lógica de Reserva) ---
   const handleReserve = async (room) => {
-    if (!selectedTime) return alert("Selecciona una hora.");
-    if (isWeekend(date)) return alert("Cerrado en fin de semana.");
+    // 1. Validaciones previas
+    if (!selectedTime) return alert("Por favor, selecciona una hora primero.");
+    if (isWeekend(date)) return alert("La universidad está cerrada los fines de semana.");
 
-    // Comprobar ocupación (Ignorando las finalizadas)
+    // 2. Validación de Concurrencia (Cliente)
+    // Compruebo si en mi estado actualizado ya existe esa reserva para evitar solapamientos.
     const isOccupied = reservationsToday.find(r => 
       r.roomId === room.id && 
       r.time === selectedTime && 
-      r.status !== 'finished' // IMPORTANTE: Si ya devolvieron la llave, está libre
+      r.status !== 'finished' // Si ya terminaron, el aula está libre
     );
 
-    if (isOccupied) return alert("Aula ocupada.");
+    if (isOccupied) return alert("Esa aula ya está ocupada en ese horario.");
 
-    if (window.confirm(`¿Reservar ${room.label} a las ${selectedTime}?`)) {
+    // 3. Confirmación y Guardado
+    if (window.confirm(`¿Confirmar reserva de ${room.label} a las ${selectedTime}?`)) {
       try {
         const code = generateCode();
         await addDoc(collection(db, "reservations"), {
@@ -119,39 +142,41 @@ export const Rooms = () => {
           time: selectedTime,
           userEmail: user.email,
           code: code,
-          status: 'confirmed', // Estados: confirmed (reservado) -> active (tiene llave) -> finished (devuelta)
+          status: 'confirmed', // Estado inicial: Confirmada pero llave no entregada
           createdAt: Date.now()
         });
-        alert(`Código: ${code}`);
+        alert(`¡Reserva exitosa! Tu código de llave es: ${code}`);
       } catch (e) {
         console.error(e);
-        alert("Error al reservar.");
+        alert("Hubo un error al procesar la reserva.");
       }
     }
   };
 
+  // Cancelar reserva (Borrado físico del documento)
   const handleCancel = async (id) => {
-    if(window.confirm("¿Cancelar reserva?")) {
+    if(window.confirm("¿Seguro que quieres cancelar esta reserva?")) {
       await deleteDoc(doc(db, "reservations", id));
     }
   };
 
-  // --- ACCIONES ADMIN (Secretaría) ---
+  // --- HANDLERS ADMIN (Gestión de Llaves) ---
+  
+  // Entregar llave física al alumno -> Estado pasa a 'active'
   const handleDeliverKey = async (id) => {
-    // Entregar llave: Pasa de 'confirmed' a 'active'
-    if(window.confirm("¿Confirmar entrega de llaves?")) {
+    if(window.confirm("¿Confirmar entrega de llaves al alumno?")) {
       await updateDoc(doc(db, "reservations", id), { status: 'active' });
     }
   };
 
+  // Recibir llave de vuelta -> Estado pasa a 'finished' (Libera ocupación)
   const handleReturnKey = async (id) => {
-    // Devolver llave: Pasa de 'active' a 'finished' (Libera el aula)
-    if(window.confirm("¿Confirmar devolución de llave? El aula quedará libre.")) {
+    if(window.confirm("¿Confirmar devolución? El aula quedará libre para nuevas reservas.")) {
       await updateDoc(doc(db, "reservations", id), { status: 'finished' });
     }
   };
 
-  // Filtro para el buscador de admin
+  // Filtro local para el buscador del administrador
   const filteredAdminList = reservationsToday.filter(r => 
     r.userEmail.toLowerCase().includes(adminSearch.toLowerCase()) ||
     r.code.toLowerCase().includes(adminSearch.toLowerCase()) ||
@@ -161,35 +186,34 @@ export const Rooms = () => {
   return (
     <div className="rooms-container">
       
-      {/* HEADER */}
-      <div className="rooms-header-card">
-        <div className="rooms-header-text">
-          <h1>{isAdmin ? "Gestión de Aulas (Secretaría)" : "Reserva de Aulas"}</h1>
-          <p>{isAdmin ? "Panel de control de llaves y ocupación." : "Gestiona espacios para estudiar o trabajos en grupo."}</p>
-        </div>
-        <div className="rooms-header-icon">
-          <Key size={40} strokeWidth={1.5} />
-        </div>
-      </div>
+      {/* HEADER DINÁMICO SEGÚN ROL */}
+      <PageHeader 
+        title={isAdmin ? "Gestión de Aulas (Secretaría)" : "Reserva de Aulas"}
+        subtitle={isAdmin ? "Panel de control de llaves y ocupación." : "Gestiona espacios para estudiar o trabajos en grupo."}
+      />
 
       <div className="rooms-layout">
         
         {/* === VISTA ALUMNO === */}
         {!isAdmin && (
           <>
+            {/* Panel Izquierdo: Selección de fecha, hora y aula */}
             <div className="booking-panel">
+              
+              {/* Selector de Fecha */}
               <div className="control-group">
                 <label className="control-label"><Calendar size={16}/> Fecha</label>
                 <input 
                   type="date" 
                   className="date-input"
                   value={date}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date().toISOString().split('T')[0]} // No permitir pasado
                   onChange={(e) => setDate(e.target.value)}
                 />
-                {isWeekend(date) && <div className="warning-badge"><AlertCircle size={14}/> Cerrado finde</div>}
+                {isWeekend(date) && <div className="warning-badge"><AlertCircle size={14}/> Cerrado fin de semana</div>}
               </div>
 
+              {/* Selector de Hora (Grid de botones) */}
               <div className="control-group">
                 <label className="control-label"><Clock size={16}/> Hora</label>
                 <div className="time-grid">
@@ -205,14 +229,15 @@ export const Rooms = () => {
                 </div>
               </div>
 
+              {/* Mapa de Aulas (Visualización de ocupación) */}
               <div className="control-group">
                 <label className="control-label"><MapPin size={16}/> Aula</label>
                 {isWeekend(date) ? (
-                  <div className="closed-state">Selecciona un día laborable.</div>
+                  <div className="closed-state">Selecciona un día laborable para ver disponibilidad.</div>
                 ) : (
                   <div className="rooms-grid">
                     {ALL_ROOMS.map(room => {
-                      // Verificar si está ocupada (estado confirmed o active)
+                      // Calculamos si el aula está ocupada en ese momento
                       const isOccupied = reservationsToday.some(r => 
                         r.roomId === room.id && r.time === selectedTime && r.status !== 'finished'
                       );
@@ -224,7 +249,7 @@ export const Rooms = () => {
                         <button
                           key={room.id}
                           className={`room-card ${isOccupied ? 'taken' : 'available'} ${isMine ? 'mine' : ''}`}
-                          disabled={isOccupied}
+                          disabled={isOccupied} // Si está ocupada, no se puede clicar
                           onClick={() => handleReserve(room)}
                         >
                           <span className="room-number">{room.id}</span>
@@ -237,50 +262,66 @@ export const Rooms = () => {
               </div>
             </div>
 
+            {/* Panel Derecho: Mis Tickets Activos */}
             <div className="my-tickets-panel">
               <h3><QrCode size={20}/> Mis Reservas Activas</h3>
               <div className="tickets-list">
                 {myActiveReservations.length === 0 ? (
-                  <div className="empty-tickets"><p>No tienes reservas.</p></div>
+                  <div className="empty-tickets"><p>No tienes reservas activas.</p></div>
                 ) : (
                   myActiveReservations.map(res => (
                     <div key={res.id} className={`ticket-card status-${res.status}`}>
                       <div className="ticket-header">
                         <span className="ticket-room">{res.roomLabel}</span>
+                        {/* Solo permitimos cancelar si no ha recogido la llave aún */}
                         {res.status === 'confirmed' && (
-                          <button className="btn-cancel-ticket" onClick={() => handleCancel(res.id)}><X size={14}/></button>
+                          <button className="btn-cancel-ticket" onClick={() => handleCancel(res.id)} title="Cancelar reserva"><X size={14}/></button>
                         )}
                       </div>
+                      
                       <div className="ticket-body">
                         <div className="ticket-info">
-                          <span>📅 {new Date(res.date).toLocaleDateString()}</span>
-                          <span>🕒 {res.time}</span>
+                          <span style={{display:'flex', alignItems:'center', gap:'6px'}}>
+                            <Calendar size={14}/> {new Date(res.date).toLocaleDateString()}
+                          </span>
+                          <span style={{display:'flex', alignItems:'center', gap:'6px'}}>
+                            <Clock size={14}/> {res.time}
+                          </span>
                         </div>
                         <div className="ticket-code-box">
-                          <span className="code-label">CÓDIGO</span>
+                          <span className="code-label">CÓDIGO DE LLAVE</span>
                           <span className="code-value">{res.code}</span>
                         </div>
                       </div>
+                      
                       <div className="ticket-footer">
-                        {res.status === 'confirmed' && <span>🟡 Pendiente recogida</span>}
-                        {res.status === 'active' && <span style={{color:'var(--primary)'}}>🟢 Llave entregada</span>}
+                        {res.status === 'confirmed' && (
+                          <span className="status-text-pending">
+                            <span className="dot-solid pending"></span> Pendiente recogida
+                          </span>
+                        )}
+                        {res.status === 'active' && (
+                          <span className="status-text-active">
+                            <span className="dot-solid active"></span> Llave entregada
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))
                 )}
               </div>
               <div className="info-box-return">
-                <strong>Devolución:</strong> Entrega la llave en secretaría para finalizar.
+                <strong>Nota:</strong> Debes entregar la llave en secretaría al terminar para finalizar la reserva.
               </div>
             </div>
           </>
         )}
 
-        {/* === VISTA ADMIN (SECRETARÍA) === */}
+        {/* === VISTA ADMIN (Panel de Secretaría) === */}
         {isAdmin && (
           <div className="admin-rooms-panel">
             
-            {/* BARRA SUPERIOR ADMIN */}
+            {/* Controles Admin (Fecha y Buscador) */}
             <div className="admin-controls">
               <div className="control-group" style={{marginBottom:0}}>
                 <label>📅 Fecha a gestionar</label>
@@ -296,12 +337,12 @@ export const Rooms = () => {
               </div>
             </div>
 
-            {/* TABLA DE GESTIÓN */}
+            {/* Tabla de Gestión de Reservas */}
             <div className="admin-table-container">
               <h3>Reservas del {new Date(date).toLocaleDateString()}</h3>
               
               {filteredAdminList.length === 0 ? (
-                <p className="empty-state-admin">No hay reservas para este día o búsqueda.</p>
+                <p className="empty-state-admin">No hay reservas registradas para este día.</p>
               ) : (
                 <table className="rooms-admin-table">
                   <thead>
@@ -315,6 +356,7 @@ export const Rooms = () => {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Ordenamos por hora para facilitar la gestión */}
                     {filteredAdminList.sort((a,b) => a.time.localeCompare(b.time)).map(r => (
                       <tr key={r.id} className={`row-${r.status}`}>
                         <td className="font-bold">{r.time}</td>
@@ -326,9 +368,9 @@ export const Rooms = () => {
                         </td>
                         <td className="font-mono">{r.code}</td>
                         <td>
-                          {r.status === 'confirmed' && <span className="status-pill pending">🟡 Pendiente</span>}
-                          {r.status === 'active' && <span className="status-pill active">🟢 En Uso</span>}
-                          {r.status === 'finished' && <span className="status-pill finished">⚫ Finalizada</span>}
+                          {r.status === 'confirmed' && <span className="status-pill pending"><span className="dot-solid pending"></span> Pendiente</span>}
+                          {r.status === 'active' && <span className="status-pill active"><span className="dot-solid active"></span> En Uso</span>}
+                          {r.status === 'finished' && <span className="status-pill finished"><span className="dot-solid finished"></span> Finalizada</span>}
                         </td>
                         <td>
                           <div className="action-buttons">
@@ -352,6 +394,7 @@ export const Rooms = () => {
               )}
             </div>
 
+            {/* Stats Rápidos */}
             <div className="admin-stats">
               <div className="stat-card">
                 <h4>Ocupadas Ahora</h4>

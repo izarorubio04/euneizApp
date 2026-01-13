@@ -1,16 +1,15 @@
-:root {
-  --primary: #000B3D;
-  --accent: #F1595C;
-}
+/* Calendar.css */
 
+/* === LAYOUT PRINCIPAL === */
 .calendar-container {
   padding-bottom: 80px;
   max-width: 1200px;
   margin: 0 auto;
+  /* La animación ya está definida globalmente, solo la invocamos */
   animation: fadeIn 0.4s ease-out;
 }
 
-/* Header */
+/* === HEADER Y LEYENDA === */
 .cal-main-header {
   display: flex;
   justify-content: space-between;
@@ -21,13 +20,15 @@
 }
 
 .cal-main-header h1 {
-  color: var(--primary);
   font-size: 2rem;
-  margin: 0;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -1px;
 }
 
 .cal-main-header p {
-  color: #64748b;
+  color: var(--text-light); /* Usamos variable global */
   margin-top: 0.5rem;
 }
 
@@ -37,7 +38,7 @@
   background: white;
   padding: 0.8rem 1.2rem;
   border-radius: 50px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 }
 
 .legend-item {
@@ -45,7 +46,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-light);
   font-weight: 600;
 }
 
@@ -55,26 +56,29 @@
   border-radius: 50%;
 }
 
-/* Layout Grid */
+/* === GRID LAYOUT (IZQ: CALENDARIO, DER: AGENDA) === */
 .calendar-layout {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
   gap: 2rem;
 }
 
+/* Responsive: Una columna en móviles */
 @media (max-width: 900px) {
-  .calendar-layout { grid-template-columns: 1fr; }
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
+/* === ESTILOS ESPECÍFICOS DE LAS TARJETAS === */
+/* Nota: Las propiedades comunes (bg, shadow, radius) vienen de .card-base */
 .cal-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  padding: 1.5rem;
-  border: 1px solid rgba(0,0,0,0.04);
+  /* Solo añadimos lo específico que no tenga .card-base */
+  display: flex;
+  flex-direction: column;
 }
 
-/* Navegación Mes */
+/* === NAVEGACIÓN DEL MES (Botones < >) === */
 .cal-nav {
   display: flex;
   justify-content: space-between;
@@ -102,9 +106,11 @@
   transition: 0.2s;
 }
 
-.nav-btn:hover { background: #e2e8f0; }
+.nav-btn:hover {
+  background: #e2e8f0;
+}
 
-/* Grid del Mes */
+/* === GRID DE DÍAS (Lógica visual del mes) === */
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -137,6 +143,7 @@
 .cal-day:hover:not(.empty) {
   background: #f8fafc;
   border-color: #e2e8f0;
+  color: var(--accent);
 }
 
 .cal-day.selected {
@@ -148,12 +155,14 @@
 .cal-day.today {
   border: 1px solid var(--accent);
 }
+
 .cal-day.today .day-number {
   color: var(--accent);
   font-weight: 800;
 }
+
 .cal-day.selected.today .day-number {
-  color: white;
+  color: var(--accent);
 }
 
 .day-number {
@@ -161,6 +170,7 @@
   font-weight: 600;
 }
 
+/* Indicadores de eventos (puntos de colores) */
 .day-dots {
   display: flex;
   gap: 3px;
@@ -172,13 +182,14 @@
   height: 5px;
   border-radius: 50%;
 }
+
 .plus-dot {
   font-size: 10px;
   line-height: 4px;
   color: #94a3b8;
 }
 
-/* Agenda Panel (Derecha) */
+/* === PANEL DE AGENDA (DERECHA) === */
 .agenda-header {
   display: flex;
   gap: 1rem;
@@ -195,11 +206,31 @@
   text-align: center;
   border: 1px solid #e2e8f0;
 }
-.big-day { display: block; font-size: 1.8rem; font-weight: 800; color: var(--primary); line-height: 1; }
-.big-month { font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 700; }
 
-.agenda-title h3 { margin: 0; color: var(--primary); }
-.agenda-title span { font-size: 0.85rem; color: #64748b; }
+.big-day {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.big-month {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+.agenda-title h3 {
+  margin: 0;
+  color: var(--primary);
+}
+
+.agenda-title span {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
 
 .agenda-list {
   display: flex;
@@ -209,6 +240,7 @@
   overflow-y: auto;
 }
 
+/* Item de evento individual */
 .event-item {
   background: #f8fafc;
   padding: 1rem;
@@ -219,7 +251,7 @@
 
 .event-time {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text-light);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -228,7 +260,7 @@
 }
 
 .all-day-badge {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -247,7 +279,7 @@
 
 .event-loc {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-light);
   display: flex;
   align-items: center;
   gap: 4px;
@@ -263,11 +295,14 @@
   opacity: 0.8;
 }
 
+/* Estado vacío */
 .empty-agenda {
   text-align: center;
   padding: 2rem;
   color: #94a3b8;
 }
-.empty-agenda p { margin-bottom: 0.5rem; font-weight: 600; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.empty-agenda p {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}

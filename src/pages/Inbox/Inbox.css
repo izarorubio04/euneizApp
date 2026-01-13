@@ -1,19 +1,12 @@
-/* src/pages/Inbox/Inbox.css */
-:root {
-  --primary: #000B3D;
-  --accent: #F1595C;
-  --text-main: #1e293b;
-  --text-light: #64748b;
-}
+/* NOTA: Colores y fuentes vienen de index.css */
 
 .inbox-container {
-  font-family: 'Inter', sans-serif;
-  animation: fadeIn 0.4s ease-out;
+  /* Padding y animación vienen del global o layout */
   padding-bottom: 80px;
   width: 100%; 
 }
 
-/* HEADER TIPO "HOME" */
+/* HEADER TIPO "HOME" (Específico de esta sección) */
 .inbox-welcome-card {
   background: white;
   border-radius: 24px;
@@ -33,11 +26,11 @@
   position: absolute;
   top: 0; right: 0; bottom: 0;
   width: 40%;
-  background: linear-gradient(90deg, transparent, rgba(241, 89, 92, 0.02));
+  background: linear-gradient(90deg, transparent, rgba(241, 89, 92, 0.02)); /* Acento suave */
   pointer-events: none;
 }
 
-/* === BOTÓN VOLVER (NUEVO) === */
+/* === BOTÓN VOLVER === */
 .btn-close-inbox {
   position: absolute;
   top: 1.5rem;
@@ -51,7 +44,7 @@
   transition: all 0.2s;
   z-index: 10;
   cursor: pointer;
-  text-decoration: none; /* Importante para el Link */
+  text-decoration: none;
 }
 
 .btn-close-inbox:hover {
@@ -86,7 +79,7 @@
   letter-spacing: -1px;
 }
 
-/* TABS */
+/* TABS (ESTILO INTEGRADO EN HEADER) */
 .inbox-tabs {
   display: flex;
   gap: 1rem;
@@ -119,21 +112,16 @@
   gap: 1rem; 
 }
 
+/* MENSAJE INDIVIDUAL */
+/* Nota: Hereda fondo, sombra y borde de .card-base */
 .msg-card {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  border: 1px solid rgba(0,0,0,0.04);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-  transition: all 0.2s ease;
   cursor: pointer;
   position: relative;
   display: flex; flex-direction: column; gap: 12px;
 }
 
 .msg-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  /* Override del hover de card-base si queremos borde de color */
   border-color: var(--accent);
 }
 
@@ -204,7 +192,12 @@
 
 .empty-inbox {
   text-align: center; padding: 4rem; color: var(--text-light);
-  background: white; border-radius: 20px; border: 2px dashed #e2e8f0;
+  /* Hereda card-base pero añadimos borde dashed */
+  border: 2px dashed #e2e8f0;
+  box-shadow: none;
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.inbox-loading {
+    text-align: center;
+    color: var(--text-light);
+    margin-top: 2rem;
+}

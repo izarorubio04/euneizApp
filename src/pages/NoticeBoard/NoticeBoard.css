@@ -1,93 +1,56 @@
 /* src/pages/NoticeBoard/NoticeBoard.css */
 
-:root {
-  --primary: #000B3D;    /* Azul oscuro corporativo */
-  --accent: #F1595C;     /* Rojo/Coral EUNEIZ */
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --bg-card: #ffffff;
-}
-
+/* === 1. LAYOUT PRINCIPAL === */
 .nb-container {
-  /* Eliminamos background-color fijo para que use el gris del MainLayout */
-  /* min-height: 100vh; <-- Quitamos esto, dejamos que el layout maneje la altura */
-  padding-bottom: 100px;
-  font-family: 'Inter', sans-serif;
+  padding-bottom: 100px; /* Espacio para el botón flotante (FAB) */
   animation: fadeIn 0.4s ease-out;
 }
 
-/* ================= HEADER FLOTANTE ================= */
-.nb-header {
-  margin-bottom: 2rem;
-  /* El header ya no es una franja blanca que corta la página */
-  background: transparent; 
-  text-align: left;
-}
-
-.nb-header-content {
-  max-width: 100%;
-}
-
-.nb-header h1 {
-  color: var(--primary);
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.nb-header p {
-  color: var(--text-muted);
-  margin-top: 0.5rem;
-  font-size: 0.95rem;
-}
-
-/* ================= FILTROS (Estilo Menú Sidebar) ================= */
+/* === 2. BARRA DE FILTROS === */
 .nb-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
-  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: 0; /* Ajuste por el padding del PageHeader */
 }
 
 .filter-pill {
-  border: 1px solid rgba(0, 11, 61, 0.1);
-  background: white;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid rgba(0, 11, 61, 0.1);
+  border-radius: 12px;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hover en grises como solicitaste */
 .filter-pill:hover {
   background-color: #f1f5f9;
-  color: var(--primary);
   border-color: #cbd5e1;
+  color: var(--primary);
   transform: translateY(-1px);
 }
 
-/* Estado Activo: Azul Corporativo */
 .filter-pill.active {
   background-color: var(--primary);
-  color: white;
   border-color: var(--primary);
+  color: white;
   box-shadow: 0 4px 12px rgba(0, 11, 61, 0.15);
 }
 
-/* Ajuste del icono dentro del filtro */
+/* Wrapper para centrar iconos dentro de los botones */
 .icon-wrapper {
   display: flex;
   align-items: center;
 }
 
-/* ================= GRID DE TARJETAS ================= */
+/* === 3. GRID DE CONTENIDO === */
 .nb-grid {
   display: flex;
   flex-direction: column;
@@ -95,31 +58,42 @@
 }
 
 .nb-section-pinned h3 {
-  color: var(--accent); /* Usamos el rojo EUNEIZ para destacar */
-  font-size: 1.1rem;
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 1rem;
+  color: var(--accent);
+  font-size: 1.1rem;
 }
 
-.pinned-grid, .feed-grid {
+.pinned-grid,
+.feed-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
-/* ================= TARJETAS OPTIMIZADAS ================= */
+/* Mensaje de feed vacío */
+.empty-feed {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background: #f8fafc;
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+}
+
+/* === 4. TARJETAS (CARD) === */
 .notice-card {
-  background: var(--bg-card);
-  border-radius: 16px; /* Coincide con el sidebar */
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .notice-card:hover {
@@ -127,21 +101,20 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Tira de color superior (Acento sutil de categoría) */
 .card-accent-strip {
-  height: 4px;
-  background-color: var(--accent-color, var(--text-muted));
   width: 100%;
+  height: 4px;
+  background-color: var(--accent-color, var(--text-light));
 }
 
 .card-body-wrapper {
-  padding: 1.2rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  padding: 1.2rem;
 }
 
-/* Badge Superior */
+/* Header de la tarjeta */
 .card-top {
   display: flex;
   justify-content: space-between;
@@ -153,80 +126,99 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 8px;
   letter-spacing: 0.5px;
 }
 
-/* Botón Pin */
+/* Botón de fijar (Pin) */
 .btn-pin {
+  display: flex;
+  padding: 4px;
   background: none;
   border: none;
-  cursor: pointer;
-  padding: 4px;
   border-radius: 50%;
   color: #cbd5e1;
+  cursor: pointer;
   transition: color 0.2s, background 0.2s;
-  display: flex;
 }
-.btn-pin:hover { background: #f8fafc; color: #f1c40f; }
-.btn-pin.active { color: #f1c40f; }
 
-/* Contenido */
+.btn-pin:hover {
+  background: #f8fafc;
+  color: #f1c40f;
+}
+
+.btn-pin.active {
+  color: #f1c40f;
+}
+
+/* Contenido de la tarjeta */
 .card-title {
   margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
   color: var(--text-main);
-  line-height: 1.4;
+  font-size: 1.1rem;
   font-weight: 700;
+  line-height: 1.4;
+}
+
+.event-date-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 0.5rem;
+  color: #666;
+  font-size: 0.85rem;
 }
 
 .card-desc {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
   flex-grow: 1;
+  margin-bottom: 1.5rem;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.5;
   white-space: pre-line;
 }
 
-/* Detalles específicos (Venta / Carpooling) */
+/* Elementos específicos (Precio, Rutas) */
 .price-tag {
   display: inline-block;
+  margin-bottom: 1rem;
   font-size: 1.1rem;
   font-weight: 800;
-  margin-bottom: 1rem;
 }
 
 .carpool-route {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f8fafc;
-  padding: 8px 12px;
-  border-radius: 8px;
   margin-bottom: 1rem;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  color: var(--text-main);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-main);
 }
-.route-arrow { color: var(--text-muted); }
 
-/* Footer de Tarjeta */
+.route-arrow {
+  color: var(--text-light);
+}
+
+/* Footer de la tarjeta */
 .card-footer {
-  padding-top: 1rem;
-  border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
 
 .author-info {
-  font-size: 0.75rem;
   color: #94a3b8;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -235,17 +227,18 @@
   gap: 6px;
 }
 
+/* Botones de acción en la tarjeta */
 .icon-btn {
-  border: none;
-  background: transparent;
-  padding: 6px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  padding: 6px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .icon-btn:hover { background: #f1f5f9; color: var(--primary); }
@@ -254,97 +247,145 @@
 .icon-btn.contact { background: rgba(0, 11, 61, 0.05); color: var(--primary); }
 .icon-btn.contact:hover { background: var(--primary); color: white; }
 
-/* Pendiente */
-.pending-card { opacity: 0.7; border-style: dashed; }
-.pending-overlay {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  background: #f59e0b; color: white; padding: 5px 10px; border-radius: 6px;
-  font-size: 0.8rem; font-weight: 700; pointer-events: none;
+/* Estados especiales */
+.pending-card {
+  opacity: 0.7;
+  border-style: dashed;
 }
 
-/* ================= BOTÓN FLOTANTE (FAB) ================= */
+.pending-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 5px 10px;
+  background: #f59e0b;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* === 5. BOTÓN FLOTANTE (FAB) === */
 .fab-add {
   position: fixed;
-  bottom: 2rem; right: 2rem;
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: var(--accent); /* Usamos el rojo EUNEIZ */
-  color: white;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 5px 12px rgba(241, 89, 92, 0.4);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: grid; place-items: center;
+  bottom: 2rem;
+  right: 2rem;
   z-index: 100;
-}
-.fab-add:hover { transform: scale(1.1); box-shadow: 0 7px 14px rgba(241, 89, 92, 0.5); }
-
-/* ================= MODALES ================= */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0, 11, 61, 0.6); /* Azul oscuro con transparencia */
-  backdrop-filter: blur(4px);
-  display: grid; place-items: center;
-  z-index: 2000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal-content {
-  background: white;
-  width: 90%; max-width: 500px;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  box-shadow: 0 5px 12px rgba(144, 142, 142, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.modal-content h2 {
-  color: var(--primary);
-  margin-top: 0;
-  font-size: 1.5rem;
+.fab-add:hover {
+  transform: scale(1.1);
+  box-shadow: 0 7px 14px rgba(144, 142, 142, 0.4);;
 }
 
-.btn-close-modal {
-  position: absolute; top: 1.5rem; right: 1.5rem;
-  background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;
+/* === 6. FORMULARIOS (Modal) === */
+.post-form .form-group {
+  margin-bottom: 1rem;
 }
-.btn-close-modal:hover { color: var(--accent); }
 
-.post-form .form-group { margin-bottom: 1rem; }
-.post-form label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-main); }
-.post-form input, .post-form textarea {
-  width: 100%; padding: 0.8rem; border-radius: 10px;
-  border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit;
+.post-form .form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.post-form label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.post-form input,
+.post-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: inherit;
   transition: border 0.2s;
 }
-.post-form input:focus, .post-form textarea:focus { outline: none; border-color: var(--primary); background: white; }
 
-.cat-selector { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.post-form input:focus,
+.post-form textarea:focus {
+  background: white;
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* Selector de Categoría (Radio buttons personalizados) */
+.cat-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .cat-radio {
-  padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0;
-  cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
   transition: all 0.2s;
 }
-.cat-radio input { display: none; }
-.radio-icon { color: var(--text-muted); }
 
-/* Selección de categoría en modal */
+.cat-radio input {
+  display: none;
+}
+
+.radio-icon {
+  color: var(--text-light);
+}
+
 .cat-radio.selected {
-  background-color: rgba(0, 11, 61, 0.05); /* Gris/Azul muy suave */
+  background-color: rgba(0, 11, 61, 0.05);
   border-color: var(--cat-color);
   color: var(--primary);
   font-weight: 700;
 }
-.cat-radio.selected .radio-icon { color: var(--cat-color); }
+
+.cat-radio.selected .radio-icon {
+  color: var(--cat-color);
+}
 
 .btn-publish {
-  width: 100%; padding: 0.9rem;
-  background: var(--primary); color: white;
-  border: none; border-radius: 12px; font-weight: 700; font-size: 1rem;
-  cursor: pointer; margin-top: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  background: var(--primary);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
   transition: background 0.2s;
 }
-.btn-publish:hover { background: #1e3a8a; } /* Un azul un poco más claro */
-.btn-publish:disabled { background: #94a3b8; cursor: not-allowed; }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.btn-publish:hover {
+  background: #1e3a8a;
+}
+
+.btn-publish:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
