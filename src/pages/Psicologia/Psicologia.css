@@ -1,39 +1,10 @@
-:root {
-  --primary-blue: #000B3D;
-  --accent-coral: #F1595C;
-  --bg-soft: #f3f4f6;
-  --text-dark: #1e293b;
-  --text-gray: #64748b;
-  --white: #ffffff;
-}
-
+/* === LAYOUT PRINCIPAL === */
 .psico-container {
   padding-bottom: 80px;
-  animation: fadeIn 0.4s ease-out;
-  font-family: 'Inter', sans-serif;
+  /* La fuente y la animación fadeIn ya vienen heredadas del Index.css */
 }
 
-/* === HEADER === */
-.psico-header {
-  margin-bottom: 2rem;
-}
-
-.psico-header h1 {
-  color: var(--primary-blue);
-  font-size: 2.2rem;
-  font-weight: 800;
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.5px;
-}
-
-.psico-header p {
-  color: var(--text-gray);
-  max-width: 600px;
-  font-size: 1.05rem;
-  line-height: 1.5;
-}
-
-/* === GRID LAYOUT === */
+/* === GRID DE LA PÁGINA === */
 .psico-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -41,21 +12,24 @@
 }
 
 @media (max-width: 900px) {
-  .psico-grid { grid-template-columns: 1fr; }
+  .psico-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* === TARJETAS GENERALES === */
+/* === ESTILOS DE TARJETAS (Card) === */
 .psico-card {
-  background: var(--white);
+  background: white;
   border-radius: 20px;
   padding: 1.8rem;
   box-shadow: 0 4px 20px rgba(0, 11, 61, 0.05);
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(0,0,0,0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.psico-card h2, .psico-card h3 {
-  color: var(--primary-blue);
+.psico-card h2,
+.psico-card h3 {
+  color: var(--primary);
   margin-top: 0;
   margin-bottom: 1rem;
   display: flex;
@@ -63,9 +37,11 @@
   gap: 8px;
 }
 
-.icon-title { color: var(--accent-coral); }
+.icon-title {
+  color: var(--accent);
+}
 
-/* === LISTA DE SERVICIOS (PILLS) === */
+/* === LISTA DE SERVICIOS (Pills) === */
 .services-list {
   display: flex;
   flex-wrap: wrap;
@@ -77,22 +53,22 @@
   padding: 0.6rem 1rem;
   border-radius: 12px;
   font-weight: 600;
-  color: var(--text-dark);
+  color: var(--text-main);
   border: 1px solid #e2e8f0;
   font-size: 0.9rem;
 }
 
 .check-icon {
-  color: var(--accent-coral);
+  color: var(--accent);
   font-weight: 800;
   margin-right: 4px;
 }
 
-/* === ACORDEÓN === */
+/* === ACORDEÓN (Áreas de actuación) === */
 .section-label {
   font-size: 0.9rem;
   text-transform: uppercase;
-  color: var(--text-gray);
+  color: var(--text-light);
   margin-bottom: 1rem;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -105,10 +81,10 @@
 }
 
 .accordion-item {
-  background: var(--white);
+  background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   border: 1px solid transparent;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -116,11 +92,11 @@
 
 .accordion-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
 }
 
 .accordion-item.active {
-  border-color: var(--primary-blue);
+  border-color: var(--primary);
   box-shadow: 0 8px 20px rgba(0, 11, 61, 0.08);
 }
 
@@ -138,121 +114,187 @@
 }
 
 .acc-icon-box {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   background: #f1f5f9;
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
   transition: all 0.2s;
 }
 
 .acc-icon-box.active {
-  background: var(--primary-blue);
+  background: var(--primary);
   color: white;
 }
 
 .accordion-header h4 {
   margin: 0;
   font-size: 1rem;
-  color: var(--text-dark);
+  color: var(--text-main);
 }
 
-.acc-arrow { color: var(--text-gray); }
+.acc-arrow {
+  color: var(--text-light);
+}
 
 .accordion-body {
   padding: 0 1.5rem 1.5rem 1.5rem;
-  padding-left: 4.5rem; /* Alinear con el texto del título */
-  color: var(--text-gray);
+  padding-left: 4.5rem;
+  color: var(--text-light);
   font-size: 0.95rem;
   line-height: 1.6;
   border-top: 1px solid #f1f5f9;
   padding-top: 1rem;
-  animation: slideDown 0.2s ease-out;
+  /* Animación simple invocando la global */
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* === SIDEBAR & CONTACT === */
+/* === BARRA LATERAL (SIDEBAR) === */
 .info-list {
-  list-style: none; padding: 0; margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
+
 .info-list li {
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 0.8rem 0;
   border-bottom: 1px solid #f1f5f9;
-  color: var(--text-dark);
+  color: var(--text-main);
   font-size: 0.95rem;
 }
-.info-list li:last-child { border-bottom: none; }
-.info-list li svg { color: var(--accent-coral); }
+
+.info-list li:last-child {
+  border-bottom: none;
+}
+
+.info-list li svg {
+  color: var(--accent);
+}
 
 .contact-card {
   background: linear-gradient(160deg, #ffffff 0%, #fdfdfd 100%);
-  border-top: 4px solid var(--accent-coral);
+  border-top: 4px solid var(--accent);
 }
 
 .contact-desc {
-  font-size: 0.9rem; color: var(--text-gray); margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 1.5rem;
 }
 
 .btn-email-direct {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-decoration: none;
   background: #f1f5f9;
-  color: var(--text-dark);
+  color: var(--text-main);
   padding: 0.8rem;
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.85rem;
   transition: 0.2s;
 }
-.btn-email-direct:hover { background: #e2e8f0; }
+
+.btn-email-direct:hover {
+  background: #e2e8f0;
+}
 
 .divider {
-  text-align: center; margin: 1rem 0; position: relative;
+  text-align: center;
+  margin: 1rem 0;
+  position: relative;
 }
+
 .divider span {
-  background: white; padding: 0 10px; color: #94a3b8; font-size: 0.8rem;
+  background: white;
+  padding: 0 10px;
+  color: #94a3b8;
+  font-size: 0.8rem;
 }
+
 .divider::before {
-  content: ''; position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: #e2e8f0; z-index: -1;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background: #e2e8f0;
+  z-index: -1;
 }
 
 .btn-primary-action {
   width: 100%;
-  background: var(--primary-blue);
+  background: var(--primary);
   color: white;
-  border: none; padding: 0.8rem;
+  border: none;
+  padding: 0.8rem;
   border-radius: 10px;
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s;
 }
-.btn-primary-action:hover { background: var(--accent-coral); }
 
-/* FORMULARIO ESTILIZADO */
+.btn-primary-action:hover {
+  background: var(--accent);
+}
+
+/* === FORMULARIO (MODAL) === */
 .psico-form {
-  display: flex; flex-direction: column; gap: 10px;
-  animation: fadeIn 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
 .psico-input {
-  width: 100%; padding: 0.8rem;
-  border-radius: 8px; border: 1px solid #e2e8f0;
-  background: #f8fafc; font-family: inherit; font-size: 0.9rem;
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 0.9rem;
+  box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
 }
+
 .psico-input:focus {
-  outline: none; border-color: var(--primary-blue); background: white;
+  outline: none;
+  border-color: var(--primary);
+  background: white;
 }
 
-.form-buttons {
-  display: flex; gap: 10px; margin-top: 0.5rem;
-}
 .btn-submit {
-  flex: 1; background: var(--primary-blue); color: white; border: none; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
-.btn-cancel {
-  background: transparent; border: 1px solid #e2e8f0; color: #64748b; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;
-}
-.btn-submit:hover { background: var(--accent-coral); }
-.btn-cancel:hover { background: #f1f5f9; }
 
-@keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.btn-submit:hover {
+  background: var(--accent);
+}

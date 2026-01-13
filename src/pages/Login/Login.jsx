@@ -1,29 +1,39 @@
 import { useState } from "react";
+// Imports de Firebase necesarios para la autenticación
 import { auth } from "../../firebase/config";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
-// AÑADIDO: Eye y EyeOff
+// Iconos visuales para mejorar la UX del formulario
 import { Mail, Lock, ArrowRight, Info, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 export const Login = () => {
+  // --- ESTADOS ---
+  // Controlamos si el usuario quiere iniciar sesión o registrarse
   const [isRegistering, setIsRegistering] = useState(false);
+  
+  // Estados del formulario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
-  // AÑADIDO: Estado para ver/ocultar contraseña
+  // Estado para UX: Mostrar/Ocultar contraseña
   const [showPassword, setShowPassword] = useState(false);
 
+  // Gestión de errores y carga
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  
+  const navigate = useNavigate(); // Hook para redirigir tras el login
 
+  // --- LÓGICA DE LOGIN/REGISTRO ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(""); // Limpiamos errores previos
     setLoading(true);
 
+    // 1. Validación de dominio institucional
+    // Solo permitimos correos de @euneiz.com para asegurar que son alumnos/profesores
     if (!email.endsWith("@euneiz.com")) {
       setError("Acceso restringido a cuentas institucionales (@euneiz.com)");
       setLoading(false);
@@ -32,20 +42,35 @@ export const Login = () => {
 
     try {
       if (isRegistering) {
+        // Registro de nuevo usuario en Firebase
         await createUserWithEmailAndPassword(auth, email, password);
       } else {
+        // Inicio de sesión estándar
         await signInWithEmailAndPassword(auth, email, password);
       }
+      
+      // Si todo va bien, redirigimos al dashboard principal
       navigate("/home"); 
+      
     } catch (err) {
-      const msg = err.code === 'auth/invalid-credential' 
-        ? "Credenciales incorrectas." 
-        : err.code === 'auth/email-already-in-use'
-        ? "Este correo ya está registrado."
-        : "Error al conectar. Inténtalo de nuevo.";
+      // Gestión de errores comunes de Firebase para dar feedback útil al usuario
+      console.error(err); // Log para depuración
+      
+      let msg = "Error al conectar. Inténtalo de nuevo.";
+      
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+        msg = "Credenciales incorrectas. Revisa tu correo o contraseña.";
+      } else if (err.code === 'auth/email-already-in-use') {
+        msg = "Este correo ya está registrado. Intenta iniciar sesión.";
+      } else if (err.code === 'auth/weak-password') {
+        msg = "La contraseña debe tener al menos 6 caracteres.";
+      } else if (err.code === 'auth/user-not-found') {
+        msg = "No existe una cuenta con este correo.";
+      }
+      
       setError(msg);
     } finally {
-      setLoading(false);
+      setLoading(false); // Desbloqueamos el botón pase lo que pase
     }
   };
 
@@ -53,13 +78,14 @@ export const Login = () => {
     <div className="login-wrapper">
       <div className="login-card">
         
-        {/* LADO IZQUIERDO: BRANDING */}
+        {/* LADO IZQUIERDO: Branding e Identidad Visual */}
         <div className="login-brand-side">
           <div className="brand-content">
             <div className="logo-badge">HUB</div>
             <h1>EUNEIZ</h1>
             <p className="brand-tagline">Tu campus universitario, digitalizado.</p>
             
+            {/* Lista de características (Solo visible en desktop) */}
             <div className="feature-list">
               <div className="feature-item">
                 <ShieldCheck size={18} />
@@ -72,19 +98,21 @@ export const Login = () => {
             </div>
           </div>
           
+          {/* Elementos decorativos de fondo */}
           <div className="brand-circles">
             <div className="circle c1"></div>
             <div className="circle c2"></div>
           </div>
         </div>
 
-        {/* LADO DERECHO: FORMULARIO */}
+        {/* LADO DERECHO: Formulario de Acceso */}
         <div className="login-form-side">
           <div className="form-header">
             <h2>{isRegistering ? "Crear cuenta" : "Bienvenido"}</h2>
             <p>Introduce tus credenciales universitarias</p>
           </div>
 
+          {/* Aviso de prototipo (Para contexto académico) */}
           <div className="prototype-alert">
             <Info size={16} className="alert-icon" />
             <p>
@@ -93,8 +121,10 @@ export const Login = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            {/* Banner de error condicional */}
             {error && <div className="error-banner">{error}</div>}
 
+            {/* Campo Email */}
             <div className="input-group">
               <label>Correo Electrónico</label>
               <div className="input-wrapper">
@@ -109,39 +139,43 @@ export const Login = () => {
               </div>
             </div>
 
+            {/* Campo Contraseña con Toggle de visibilidad */}
             <div className="input-group">
               <label>Contraseña</label>
               <div className="input-wrapper">
                 <Lock size={18} className="field-icon" />
                 <input 
-                  // CAMBIO: Tipo dinámico según el estado
+                  // Cambiamos el tipo de input dinámicamente
                   type={showPassword ? "text" : "password"} 
                   placeholder="••••••••" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)} 
                   required
-                  // CAMBIO: Padding derecho extra para que no pise el ojo
+                  // Añadimos padding extra a la derecha para que el texto no se monte sobre el ojo
                   style={{ paddingRight: '2.8rem' }}
                 />
                 
-                {/* AÑADIDO: Botón del ojito */}
+                {/* Botón para ver/ocultar contraseña */}
                 <button 
-                  type="button"
+                  type="button" // Importante: type="button" para no enviar el form al clicar
                   className="btn-show-password"
                   onClick={() => setShowPassword(!showPassword)}
-                  tabIndex="-1"
+                  tabIndex="-1" // Lo sacamos del flujo de tabulación para ir más rápido
+                  title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
             
+            {/* Botón de envío con estado de carga */}
             <button type="submit" className="btn-login" disabled={loading}>
               {loading ? "Procesando..." : (isRegistering ? "Registrarse" : "Acceder al Campus")}
               {!loading && <ArrowRight size={18} />}
             </button>
           </form>
 
+          {/* Footer para alternar entre Login y Registro */}
           <div className="form-footer">
             <p>
               {isRegistering ? "¿Ya tienes cuenta?" : "¿Aún no tienes acceso?"}

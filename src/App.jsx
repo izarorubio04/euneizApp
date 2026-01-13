@@ -16,8 +16,6 @@ import Calendar from "./pages/Calendar/Calendar";
 
 // Servicios / Biblioteca / Aulas
 import { Library } from "./pages/Library/Library";
-import { Favorites } from "./pages/Library/Favorites";
-import { Reservations } from "./pages/Library/Reservations";
 import { Rooms } from "./pages/Rooms/Rooms";
 import Psicologia from "./pages/Psicologia/Psicologia";
 
@@ -79,8 +77,6 @@ function App() {
 
           {/* --- BLOQUE SERVICIOS --- */}
           <Route path="/library" element={<Library />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/reservas" element={<Reservations />} />
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/comunidad/psicologia" element={<Psicologia />} />
 

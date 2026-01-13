@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// IMPORTANTE: Importamos Link para la navegación
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { db } from "../../firebase/config";
@@ -12,8 +11,7 @@ import "./Inbox.css";
 // ICONOS
 import { 
   Mail, Send, Inbox as InboxIcon, 
-  Trash2, Reply, FileText,
-  X // Importamos la X para el botón de cerrar
+  Trash2, Reply, FileText, X 
 } from "lucide-react";
 
 export const Inbox = () => {
@@ -60,10 +58,8 @@ export const Inbox = () => {
   return (
     <div className="inbox-container">
       
-      {/* HEADER INTEGRADO */}
+      {/* HEADER PERSONALIZADO (Mantenemos este estilo por el botón "Volver") */}
       <div className="inbox-welcome-card">
-        
-        {/* BOTÓN VOLVER A HOME (NUEVO) */}
         <Link to="/home" className="btn-close-inbox" title="Volver al Inicio">
           <X size={22} />
         </Link>
@@ -90,10 +86,10 @@ export const Inbox = () => {
       </div>
 
       <div className="inbox-content">
-        {loading && <div className="inbox-loading">Sincronizando...</div>}
+        {loading && <div className="inbox-loading">Sincronizando mensajes...</div>}
 
         {!loading && messages.length === 0 && (
-          <div className="empty-inbox">
+          <div className="empty-inbox card-base">
             <Mail size={48} style={{opacity:0.2, marginBottom:'1rem'}}/>
             <p>No tienes mensajes en esta bandeja.</p>
           </div>
@@ -104,7 +100,8 @@ export const Inbox = () => {
             {messages.map(msg => (
               <div 
                 key={msg.id} 
-                className={`msg-card ${activeTab === 'received' && !msg.read ? 'unread' : 'read'}`}
+                // AÑADIDO: 'card-base' para estilos globales
+                className={`msg-card card-base ${activeTab === 'received' && !msg.read ? 'unread' : 'read'}`}
                 onClick={() => markAsRead(msg)}
               >
                 <div className="msg-header">
@@ -118,7 +115,7 @@ export const Inbox = () => {
                 </div>
                 
                 <div className="msg-context-badge">
-                   <FileText size={12}/> Ref: {msg.postTitle}
+                   <FileText size={12}/> Ref: {msg.postTitle || "General"}
                 </div>
 
                 <div className="msg-body-preview">

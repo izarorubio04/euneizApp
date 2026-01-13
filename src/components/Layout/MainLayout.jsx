@@ -6,7 +6,6 @@ import {
   Home, 
   LayoutDashboard, 
   Calendar, 
-  Mail, 
   Users, 
   Trophy, 
   Lightbulb, 

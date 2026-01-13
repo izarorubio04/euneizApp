@@ -1,35 +1,30 @@
-/* src/components/Layout/MainLayout.css */
-
-/* =========================
-   LAYOUT GENERAL
-   ========================= */
+/* === CONTENEDOR PRINCIPAL (Flex Row) === */
 .layout-container {
   display: flex;
   height: 100vh;
-  background-color: #f3f4f6; /* Fondo gris muy suave para el contenido */
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden; /* Evita scroll doble */
+  /* El fondo y la fuente ya vienen heredados de Index.css, 
+     pero si quieres forzar un gris específico para el dashboard, está bien dejarlo aquí */
+  background-color: #f3f4f6;
+  overflow: hidden; /* Evita scroll doble en la ventana principal */
 }
 
-/* =========================
-   SIDEBAR (Estilo Flotante)
-   ========================= */
+/* === SIDEBAR (Barra Lateral Flotante) === */
 .sidebar {
   /* Dimensiones y posición */
   width: 260px;
-  height: 96vh; /* No ocupa todo el alto para dar efecto flotante */
-  margin: 2vh 0 2vh 2vh; /* Margen izquierdo y vertical */
+  height: 96vh; /* Efecto flotante: no toca los bordes verticales */
+  margin: 2vh 0 2vh 2vh; /* Margen: Arriba, Derecha, Abajo, Izquierda */
   
-  /* Estilo Visual - Color Solicitado */
-  background-color: #000B3D; 
+  /* Estética */
+  background-color: #000B3D; /* Azul corporativo */
   color: #ecf0f1;
-  border-radius: 24px; /* Bordes redondeados */
+  border-radius: 24px;
+  box-shadow: 4px 0 20px rgba(0, 11, 61, 0.15);
   
-  /* Flexbox interno */
+  /* Layout interno */
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 20px rgba(0, 11, 61, 0.15); /* Sombra suave */
-  z-index: 100;
+  z-index: 100; /* Asegura que esté por encima del contenido si hay solapamiento */
 }
 
 /* --- Header del Sidebar --- */
@@ -61,33 +56,35 @@
   letter-spacing: 1px;
 }
 
-/* --- Navegación --- */
+/* --- Navegación (Scrollable) --- */
 .sidebar-nav {
-  flex: 1;
+  flex: 1; /* Ocupa el espacio restante */
   padding: 0 1rem;
-  overflow-y: auto;
+  overflow-y: auto; /* Scroll solo si la lista es muy larga */
   margin-top: 1rem;
 }
 
-/* Scrollbar invisible pero funcional para el menú */
+/* Personalización del Scrollbar (Chrome/Safari/Edge) */
 .sidebar-nav::-webkit-scrollbar {
   width: 4px;
 }
+
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
+/* Títulos de sección */
 .nav-section {
+  margin: 1.5rem 0 0.5rem 0.8rem;
   font-size: 0.7rem;
-  color: #64748b; /* Gris azulado para títulos de sección */
+  color: #64748b;
   font-weight: 700;
   letter-spacing: 0.1em;
-  margin: 1.5rem 0 0.5rem 0.8rem;
   text-transform: uppercase;
 }
 
-/* Items del Menú */
+/* Enlaces de Navegación */
 .nav-item {
   display: flex;
   align-items: center;
@@ -96,20 +93,19 @@
   margin-bottom: 4px;
   
   text-decoration: none;
-  color: #cbd5e1; /* Blanco hueso suave */
+  color: #cbd5e1;
   font-size: 0.95rem;
   font-weight: 500;
-  border-radius: 12px; /* Efecto píldora */
+  border-radius: 12px;
   transition: all 0.2s ease;
 }
 
-/* Iconos dentro del nav item */
 .nav-item svg {
   opacity: 0.7;
   transition: opacity 0.2s;
 }
 
-/* --- ESTADOS (Hover / Active) en GRISES --- */
+/* Estados Hover / Active */
 .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
   color: #ffffff;
@@ -120,27 +116,26 @@
 }
 
 .nav-item.active {
-  background-color: rgba(255, 255, 255, 0.15); /* Gris traslúcido elegante */
+  background-color: rgba(255, 255, 255, 0.15);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sutil elevación */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .nav-item.active svg {
   opacity: 1;
 }
 
-/* =========================
-   FOOTER (Perfil Usuario)
-   ========================= */
+/* --- Footer del Sidebar (Usuario) --- */
 .sidebar-footer {
+  margin-top: auto; /* Empuja hacia abajo */
   padding: 1.2rem;
-  margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(0, 0, 0, 0.2); /* Ligeramente más oscuro */
+  background: rgba(0, 0, 0, 0.2);
+  /* Redondeamos solo abajo para coincidir con el contenedor padre */
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
 }
@@ -150,8 +145,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  text-decoration: none;
   padding: 6px;
+  text-decoration: none;
   border-radius: 10px;
   transition: background 0.2s;
 }
@@ -163,12 +158,12 @@
 .avatar-circle {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
-  color: #1e293b;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  color: #1e293b;
   font-weight: 700;
   font-size: 1rem;
 }
@@ -189,19 +184,19 @@
   color: #94a3b8;
 }
 
-/* Botón Logout discreto */
+/* Botón Logout */
 .logout-icon-btn {
-  background: transparent;
-  border: none;
-  color: #ef4444; /* Mantenemos rojo solo para peligro/salida, pero sutil */
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #ef4444;
+  cursor: pointer;
   opacity: 0.7;
+  transition: all 0.2s;
 }
 
 .logout-icon-btn:hover {
@@ -209,12 +204,10 @@
   opacity: 1;
 }
 
-/* =========================
-   ÁREA DE CONTENIDO
-   ========================= */
+/* === ÁREA DE CONTENIDO (Main) === */
 .content-area {
-  flex: 1;
-  overflow-y: auto;
+  flex: 1; /* Ocupa todo el ancho restante */
+  overflow-y: auto; /* El scroll principal de la página ocurre aquí */
   position: relative;
 }
 
@@ -222,11 +215,6 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  /* Animación de entrada suave para el contenido */
-  animation: fadeIn 0.4s ease-out; 
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  /* Usamos la animación global definida en Index.css */
+  animation: fadeIn 0.4s ease-out;
 }

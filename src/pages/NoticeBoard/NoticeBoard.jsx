@@ -1,67 +1,61 @@
 import React, { useState, useEffect } from "react";
 import "./NoticeBoard.css";
 import { useAuth } from "../../context/AuthContext";
+
+// Firebase Imports: Traemos solo lo necesario para interactuar con la BD
 import { db } from "../../firebase/config";
 import { 
-  collection, 
-  addDoc, 
-  deleteDoc, 
-  updateDoc, 
-  doc, 
-  onSnapshot, 
-  query, 
-  orderBy 
+  collection, addDoc, deleteDoc, updateDoc, 
+  doc, onSnapshot, query, orderBy 
 } from "firebase/firestore";
 
-// IMPORTAMOS ICONOS DE LUCIDE (Cohesión con el menú)
+// Constantes y componentes reutilizables
+import { ADMIN_EMAILS } from "../../config/constants"; // Lista de profes/admins
+import PageHeader from "../../components/UI/PageHeader";
+import Modal from "../../components/UI/Modal";
+
+// Iconos (Usamos Lucide porque son más limpios que FontAwesome)
 import { 
-  Megaphone, 
-  PartyPopper, 
-  Beer, 
-  Car, 
-  Home, 
-  BadgeEuro, 
-  Search, 
-  Package,
-  Plus,
-  Pin,
-  MessageCircle,
-  Trash2,
-  CheckCircle,
-  Calendar as CalIcon
+  Megaphone, PartyPopper, Beer, Car, Home, 
+  BadgeEuro, Search, Package, Plus, Pin, 
+  MessageCircle, Trash2, CheckCircle, Calendar as CalIcon, Inbox as InboxIcon,
 } from "lucide-react";
 
-// Actualizamos el objeto CATEGORIES con componentes en lugar de emojis
+// Configuración de categorías: Esto facilita añadir nuevas en el futuro
+// Definimos color, icono y si es exclusivo para admins (como Secretaría)
 const CATEGORIES = {
-  secretaria: { label: "Avisos Secretaría", icon: <Megaphone size={18} />, color: "#F1595C", adminOnly: true }, // Usamos el rojo corporativo aquí para urgencia
+  secretaria: { label: "Avisos Secretaría", icon: <Megaphone size={18} />, color: "#F1595C", adminOnly: true },
   eventos:    { label: "Eventos Uni",       icon: <PartyPopper size={18}/>, color: "#3498db", adminOnly: false },
-  social:     { label: "Social",            icon: <Beer size={18} />,        color: "#e84393", adminOnly: false },
-  carpooling: { label: "Carpooling",        icon: <Car size={18} />,         color: "#2ecc71", adminOnly: false },
-  vivienda:   { label: "Vivienda",          icon: <Home size={18} />,        color: "#00cec9", adminOnly: false },
-  venta:      { label: "Compra-Venta",      icon: <BadgeEuro size={18} />,   color: "#9b59b6", adminOnly: false },
-  perdidos:   { label: "Objetos Perdidos",  icon: <Search size={18} />,      color: "#f39c12", adminOnly: false },
-  otros:      { label: "Otros",             icon: <Package size={18} />,     color: "#636e72", adminOnly: false },
+  social:     { label: "Social",            icon: <Beer size={18} />,       color: "#e84393", adminOnly: false },
+  carpooling: { label: "Carpooling",        icon: <Car size={18} />,        color: "#2ecc71", adminOnly: false },
+  vivienda:   { label: "Vivienda",          icon: <Home size={18} />,       color: "#00cec9", adminOnly: false },
+  venta:      { label: "Compra-Venta",      icon: <BadgeEuro size={18} />,  color: "#9b59b6", adminOnly: false },
+  perdidos:   { label: "Objetos Perdidos",  icon: <Search size={18} />,     color: "#f39c12", adminOnly: false },
+  otros:      { label: "Otros",             icon: <Package size={18} />,    color: "#636e72", adminOnly: false },
 };
-
-const ADMIN_EMAILS = ["admin@euneiz.com", "secretaria@euneiz.com"];
 
 export const NoticeBoard = () => {
   const { user } = useAuth();
+  
+  // Comprobamos si el usuario actual es Admin mirando si su email está en la lista de constantes
   const isUserAdmin = user && ADMIN_EMAILS.includes(user.email);
 
+  // --- ESTADOS ---
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("all"); // 'all', 'mine', o una categoría específica
   
-  // Modales
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  // Control de Modales
+  const [isModalOpen, setIsModalOpen] = useState(false); // Crear anuncio
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // Contactar
   
-  // Estado Contacto
+  // Estado para el formulario de contacto (privado)
   const [contactTarget, setContactTarget] = useState(null);
   const [messageText, setMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  // Estado para los Pines (Anuncios guardados)
+  // Inicializamos leyendo de localStorage para que no se pierdan al recargar
   const [pinnedIds, setPinnedIds] = useState(() => {
     try {
       const saved = localStorage.getItem("my_pinned_notices");
@@ -69,23 +63,29 @@ export const NoticeBoard = () => {
     } catch { return []; }
   });
 
+  // Estado del formulario de creación
   const [formData, setFormData] = useState({
     type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: ""
   });
 
+  // 1. Cargar Posts (Tiempo Real)
+  // Usamos onSnapshot para que si alguien publica, aparezca al instante sin recargar
   useEffect(() => {
     const q = query(collection(db, "notices"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     });
-    return () => unsubscribe();
+    return () => unsubscribe(); // Limpiamos el listener al salir
   }, []);
 
+  // 2. Guardar Pines
+  // Cada vez que modificamos pinnedIds, actualizamos el LocalStorage
   useEffect(() => {
     localStorage.setItem("my_pinned_notices", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
 
+  // Handler para poner/quitar pin
   const togglePin = (id) => {
     setPinnedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [id, ...prev]);
   };
@@ -94,12 +94,14 @@ export const NoticeBoard = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 3. Publicar un nuevo anuncio
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.desc) return alert("Rellena los campos obligatorios");
 
     try {
       const isSecretaria = formData.type === "secretaria";
+      // Si es admin o secretaría, se aprueba directo. Si no, va a 'pending' para moderación.
       const initialStatus = (isUserAdmin || isSecretaria) ? "approved" : "pending";
 
       await addDoc(collection(db, "notices"), {
@@ -108,8 +110,9 @@ export const NoticeBoard = () => {
         desc: formData.desc,
         author: user?.email || "Anónimo",
         date: Date.now(),
-        eventDate: formData.eventDate || null, // Fecha del evento real (para el calendario)
+        eventDate: formData.eventDate || null,
         status: initialStatus,
+        // Guardamos datos extra en un objeto 'meta' para tenerlo ordenado
         meta: {
           price: formData.price,
           origen: formData.origin,
@@ -119,6 +122,7 @@ export const NoticeBoard = () => {
       });
 
       setIsModalOpen(false);
+      // Reseteamos el form para la próxima vez
       setFormData({ type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: "" });      
 
       if (initialStatus === "pending") {
@@ -129,7 +133,8 @@ export const NoticeBoard = () => {
     }
   };
 
-  // --- LÓGICA DE MENSAJERÍA ---
+  // 4. Lógica de Mensajería Interna
+  // Preparamos el modal de contacto con los datos del destinatario
   const handleOpenContact = (post) => {
     setContactTarget({
       email: post.author,
@@ -144,7 +149,6 @@ export const NoticeBoard = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!messageText.trim()) return;
-
     setIsSending(true); 
 
     try {
@@ -158,6 +162,7 @@ export const NoticeBoard = () => {
         read: false
       });
       
+      // Pequeño delay para UX
       setTimeout(() => {
         setIsSending(false);
         setIsContactModalOpen(false);
@@ -170,8 +175,9 @@ export const NoticeBoard = () => {
     }
   };
 
+  // Funciones de gestión (Borrar y Aprobar)
   const deletePost = async (id) => {
-    if(!window.confirm("¿Borrar anuncio?")) return;
+    if(!window.confirm("¿Estás seguro de borrar este anuncio?")) return;
     await deleteDoc(doc(db, "notices", id));
   };
 
@@ -179,39 +185,45 @@ export const NoticeBoard = () => {
     await updateDoc(doc(db, "notices", id), { status: "approved" });
   };
 
+  // --- LÓGICA DE FILTRADO ---
   const visiblePosts = posts.filter(post => {
     const isOwner = user && post.author === user.email;
+    // Si filtro 'mine', solo veo los míos
     if (filter === 'mine') return isOwner;
+    
+    // Si no, veo los aprobados (o todos si soy admin, o los míos aunque estén pendientes)
     const statusOk = isUserAdmin || isOwner || post.status === "approved";
     const typeOk = filter === "all" ? true : post.type === filter;
+    
     return statusOk && typeOk;
   });
 
+  // Separamos los fijados del resto para mostrarlos arriba
   const myPinnedPosts = filter === 'mine' ? [] : visiblePosts.filter(p => pinnedIds.includes(p.id));
   const feedPosts = filter === 'mine' ? visiblePosts : visiblePosts.filter(p => !pinnedIds.includes(p.id));
 
-  if (loading) return <div className="nb-loading">Cargando tablón...</div>;
+  if (loading) return <div className="nb-container" style={{padding: '2rem', textAlign:'center'}}>Cargando tablón...</div>;
 
   return (
     <div className="nb-container">
-      <header className="nb-header">
-        <div className="nb-header-content">
-          <h1>Tablón de Anuncios</h1>
-          <p>Mantente al día con lo que pasa en el campus</p>
-          
-          <div className="nb-filters">
-            <button className={`filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter("all")}>Todo</button>
-            <button className={`filter-pill ${filter === 'mine' ? 'active' : ''}`} onClick={() => setFilter("mine")}>👤 Mis Anuncios</button>
-            {Object.entries(CATEGORIES).map(([key, config]) => (
-              <button key={key} className={`filter-pill ${filter === key ? 'active' : ''}`} style={{ '--cat-color': config.color }} onClick={() => setFilter(key)}>
-                <span className="icon-wrapper" style={{color: filter === key ? 'white' : config.color}}>{config.icon}</span> {config.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </header>
+      <PageHeader 
+        title="Tablón de Anuncios" 
+        subtitle="Mantente al día con lo que pasa en el campus" 
+      />
+      
+      {/* SECCIÓN DE FILTROS */}
+      <div className="nb-filters">
+        <button className={`filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter("all")}>Todo</button>
+        <button className={`filter-pill ${filter === 'mine' ? 'active' : ''}`} onClick={() => setFilter("mine")}>Mis Anuncios</button>
+        {Object.entries(CATEGORIES).map(([key, config]) => (
+          <button key={key} className={`filter-pill ${filter === key ? 'active' : ''}`} style={{ '--cat-color': config.color }} onClick={() => setFilter(key)}>
+            <span className="icon-wrapper" style={{color: filter === key ? 'white' : config.color}}>{config.icon}</span> {config.label}
+          </button>
+        ))}
+      </div>
 
       <main className="nb-grid">
+        {/* SECCIÓN ANUNCIOS FIJADOS (PINNED) */}
         {myPinnedPosts.length > 0 && filter !== 'mine' && (
           <div className="nb-section-pinned">
             <h3><Pin size={20} /> Anuncios Fijados</h3>
@@ -222,101 +234,112 @@ export const NoticeBoard = () => {
             </div>
           </div>
         )}
+
+        {/* FEED GENERAL */}
         <div className="feed-grid">
           {feedPosts.map(post => (
             <Card key={post.id} post={post} isAdmin={isUserAdmin} currentUserEmail={user?.email} isPinned={false} onPin={() => togglePin(post.id)} onDelete={deletePost} onApprove={approvePost} onContact={() => handleOpenContact(post)} />
           ))}
+          
+          {/* EMPTY STATE */}
           {feedPosts.length === 0 && myPinnedPosts.length === 0 && (
              <div className="empty-feed">
-               <span>📭</span>
-               <p>No hay anuncios en esta categoría.</p>
+               <span style={{fontSize: '2rem'}}><InboxIcon size={24}/></span>
+               <p style={{color: 'var(--text-light)'}}>No hay anuncios en esta categoría.</p>
              </div>
           )}
         </div>
       </main>
 
+      {/* BOTÓN FLOTANTE */}
       <button className="fab-add" onClick={() => setIsModalOpen(true)} title="Crear anuncio">
         <Plus size={32} />
       </button>
 
-      {/* MODAL CREAR */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}>✕</button>
-            <h2>Publicar Anuncio</h2>
-            <form onSubmit={handleSubmit} className="post-form">
-               <div className="form-group">
-                <label>Categoría</label>
-                <div className="cat-selector">
-                  {Object.entries(CATEGORIES).map(([key, config]) => {
-                    if (config.adminOnly && !isUserAdmin) return null;
-                    return (
-                      <label key={key} className={`cat-radio ${formData.type === key ? 'selected' : ''}`} style={{'--cat-color': config.color}}>
-                        <input type="radio" name="type" value={key} checked={formData.type === key} onChange={handleInputChange} />
-                        <span className="radio-icon">{config.icon}</span> {config.label}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="form-group"><label>Título</label><input name="title" value={formData.title} onChange={handleInputChange} required placeholder="Ej: Vendo apuntes de anatomía..." /></div>
-              
-              {(formData.type === "eventos" || formData.type === "social") && (
-                <div className="form-group">
-                  <label>Fecha del Evento <span style={{color:'red'}}>*</span></label>
-                  <input 
-                    type="date" 
-                    name="eventDate" 
-                    value={formData.eventDate} 
-                    onChange={handleInputChange} 
-                    required 
-                    className="date-input"
-                  />
-                </div>
-              )}
-
-              {(formData.type === "venta" || formData.type === "vivienda") && <div className="form-group"><label>Precio (€)</label><input name="price" type="number" value={formData.price} onChange={handleInputChange} placeholder="0" /></div>}
-              {formData.type === "carpooling" && <div className="form-row"><input name="origin" placeholder="📍 Origen" value={formData.origin} onChange={handleInputChange} /><input name="dest" placeholder="🏁 Destino" value={formData.dest} onChange={handleInputChange} /></div>}
-              <div className="form-group"><label>Descripción</label><textarea name="desc" value={formData.desc} onChange={handleInputChange} rows={3} required placeholder="Detalla tu anuncio..."></textarea></div>
-              <button type="submit" className="btn-publish">Publicar Anuncio</button>
-            </form>
+      {/* MODAL CREAR ANUNCIO */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Publicar Anuncio"
+      >
+        <form onSubmit={handleSubmit} className="post-form">
+           <div className="form-group">
+            <label>Categoría</label>
+            <div className="cat-selector">
+              {Object.entries(CATEGORIES).map(([key, config]) => {
+                // Ocultamos categorías de admin si el usuario no lo es
+                if (config.adminOnly && !isUserAdmin) return null;
+                return (
+                  <label key={key} className={`cat-radio ${formData.type === key ? 'selected' : ''}`} style={{'--cat-color': config.color}}>
+                    <input type="radio" name="type" value={key} checked={formData.type === key} onChange={handleInputChange} />
+                    <span className="radio-icon">{config.icon}</span> {config.label}
+                  </label>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+          
+          <div className="form-group">
+            <label>Título</label>
+            <input name="title" value={formData.title} onChange={handleInputChange} required placeholder="Ej: Vendo apuntes de anatomía..." />
+          </div>
+          
+          {/* Campos condicionales según tipo */}
+          {(formData.type === "eventos" || formData.type === "social") && (
+            <div className="form-group">
+              <label>Fecha del Evento <span style={{color:'red'}}>*</span></label>
+              <input type="date" name="eventDate" value={formData.eventDate} onChange={handleInputChange} required className="date-input"/>
+            </div>
+          )}
+
+          {(formData.type === "venta" || formData.type === "vivienda") && (
+             <div className="form-group"><label>Precio (€)</label><input name="price" type="number" value={formData.price} onChange={handleInputChange} placeholder="0" /></div>
+          )}
+          
+          {formData.type === "carpooling" && (
+             <div className="form-row"><input name="origin" placeholder="Origen" value={formData.origin} onChange={handleInputChange} /><input name="dest" placeholder="Destino" value={formData.dest} onChange={handleInputChange} /></div>
+          )}
+          
+          <div className="form-group">
+            <label>Descripción</label>
+            <textarea name="desc" value={formData.desc} onChange={handleInputChange} rows={3} required placeholder="Detalla tu anuncio..."></textarea>
+          </div>
+          
+          <button type="submit" className="btn-publish">Publicar Anuncio</button>
+        </form>
+      </Modal>
 
       {/* MODAL DE CONTACTO */}
-      {isContactModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsContactModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="btn-close-modal" onClick={() => setIsContactModalOpen(false)}>✕</button>
-            <h2>Contactar con el autor</h2>
-            <p className="contact-subtitle">
-              Mensaje para: <strong>{contactTarget?.email.split('@')[0]}</strong>
-            </p>
-            <form onSubmit={handleSendMessage} className="post-form">
-              <div className="form-group">
-                <textarea 
-                  value={messageText} 
-                  onChange={(e) => setMessageText(e.target.value)} 
-                  rows={5} 
-                  placeholder="Hola, me interesa tu anuncio..."
-                  required
-                  disabled={isSending}
-                ></textarea>
-              </div>
-              <button type="submit" className="btn-publish" disabled={isSending}>
-                {isSending ? "Enviando..." : "Enviar Mensaje"}
-              </button>
-            </form>
+      <Modal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+        title="Contactar con el autor"
+      >
+        <p className="contact-subtitle" style={{marginBottom: '1rem', color: 'var(--text-light)'}}>
+          Mensaje para: <strong>{contactTarget?.email.split('@')[0]}</strong>
+        </p>
+        <form onSubmit={handleSendMessage} className="post-form">
+          <div className="form-group">
+            <textarea 
+              value={messageText} 
+              onChange={(e) => setMessageText(e.target.value)} 
+              rows={5} 
+              placeholder="Hola, me interesa tu anuncio..."
+              required
+              disabled={isSending}
+            ></textarea>
           </div>
-        </div>
-      )}
+          <button type="submit" className="btn-publish" disabled={isSending}>
+            {isSending ? "Enviando..." : "Enviar Mensaje"}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 };
 
-// COMPONENTE TARJETA OPTIMIZADO
+// --- SUBCOMPONENTE CARD ---
+// Lo extraje aquí para no ensuciar el componente principal
 const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onApprove, onContact }) => {
   const config = CATEGORIES[post.type] || CATEGORIES.otros;
   const isOwner = currentUserEmail && post.author === currentUserEmail;
@@ -324,8 +347,6 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
 
   return (
     <div className={`notice-card ${post.status === 'pending' ? 'pending-card' : ''}`} style={{'--accent-color': config.color}}>
-      
-      {/* HEADER DE LA TARJETA CON BORDE DE COLOR */}
       <div className="card-accent-strip"></div>
       
       <div className="card-body-wrapper">
@@ -334,21 +355,19 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
             {config.icon} {config.label}
           </span>
           <button className={`btn-pin ${isPinned ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onPin(); }} title="Fijar anuncio">
-            <Pin size={18} fill={isPinned ? "#f1c40f" : "none"} />
+            <Pin size={18} fill={isPinned ? "#F1595C" : "none"} />
           </button>
         </div>
 
         <h3 className="card-title">{post.title}</h3>
 
-        {/* Mostramos fecha del evento si existe */}
         {post.eventDate && (
-          <div className="event-date-display" style={{color: '#666', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '5px'}}>
+          <div className="event-date-display">
              <CalIcon size={14}/> 
              <strong>Fecha:</strong> {new Date(post.eventDate).toLocaleDateString()}
           </div>
         )}
         
-        {/* METADATA ESPECÍFICA */}
         {post.type === "carpooling" && post.meta && (
             <div className="carpool-route">
                 <div className="route-point origin">{post.meta.origen || "?"}</div>
@@ -364,7 +383,7 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
         
         <div className="card-footer">
           <span className="author-info">
-             {isOwner ? "👤 Tú" : `@${post.author.split('@')[0]}`} • {new Date(post.date).toLocaleDateString()}
+             {isOwner ? " Tú" : `@${post.author.split('@')[0]}`} • {new Date(post.date).toLocaleDateString()}
           </span>
 
           <div className="card-actions">
