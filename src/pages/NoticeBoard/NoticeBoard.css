@@ -148,11 +148,11 @@
 
 .btn-pin:hover {
   background: #f8fafc;
-  color: #f1c40f;
+  color: #F1595C;
 }
 
 .btn-pin.active {
-  color: #f1c40f;
+  color: #F1595C;
 }
 
 /* Contenido de la tarjeta */

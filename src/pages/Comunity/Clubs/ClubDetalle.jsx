@@ -3,12 +3,12 @@ import { useParams } from "react-router-dom";
 
 const clubsData = [
   {
-    id: "cine",
-    nombre: "Club de Cine",
+    id: "radio",
+    nombre: "Radio EUNEIZ",
     descripcion:
-      "Club centrado en cine y series. Organizamos proyecciones, debates y ciclos temáticos.",
+          "Espacio creativo dedicado a la comunicación y la radio universitaria.",
     reuniones: "Jueves a las 18:00",
-    contacto: "cine@euneiz.com",
+    contacto: "radio@euneiz.com",
   },
   {
     id: "esports",
@@ -19,12 +19,21 @@ const clubsData = [
     contacto: "esports@euneiz.com",
   },
   {
-    id: "lectura",
-    nombre: "Club de Lectura",
+    id: "english",
+    nombre: "English Corner",
     descripcion:
-      "Lecturas conjuntas, clubs de libro y debates literarios.",
+      "Punto de encuentro para practicar inglés de forma dinámica.",
     reuniones: "Miércoles 19:00",
-    contacto: "lectura@euneiz.com",
+    contacto: "enlish@euneiz.com",
+  },
+
+  {
+    id: "music",
+    nombre: "Coro EUNEIZ",
+    descripcion:
+      "Ensayos grupales, aprendizaje vocal y actuaciones en eventos académicos y culturales.",
+    reuniones: "Miércoles 19:00",
+    contacto: "music@euneiz.com",
   },
 ];
 
