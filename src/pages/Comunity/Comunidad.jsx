@@ -21,9 +21,9 @@ import {
 // Datos estáticos para los clubs oficiales (ya que estos no los crean los alumnos)
 const OFFICIAL_CLUBS = [
   {
-    id: "cine",
-    nombre: "Club de Cine",
-    desc: "Proyecciones semanales y debates.",
+    id: "radio",
+    nombre: "Radio EUNEIZ",
+    desc: "Graba tus podcasts semanales y debates.",
     icon: <Clapperboard size={40} strokeWidth={1.5} />,
     horario: "Jueves 18:00",
     color: "#e11d48"
@@ -37,17 +37,17 @@ const OFFICIAL_CLUBS = [
     color: "#7c3aed"
   },
   {
-    id: "lectura",
-    nombre: "Club de Lectura",
-    desc: "Comparte tus libros favoritos.",
+    id: "english",
+    nombre: "English Corner",
+    desc: "Aprende y páctica tu inglés.",
     icon: <BookOpen size={40} strokeWidth={1.5} />,
     horario: "Miércoles 19:00",
     color: "#059669"
   },
   {
     id: "musica",
-    nombre: "Music Band",
-    desc: "Grupo de música oficial.",
+    nombre: "Coro EUNEIZ",
+    desc: "Coro de música oficial.",
     icon: <Music size={40} strokeWidth={1.5} />,
     horario: "Viernes 16:00",
     color: "#d97706"
@@ -317,7 +317,7 @@ export default function Comunidad() {
           </div>
 
           <button type="submit" className="btn-submit-com">
-            🚀 Crear Grupo
+            Crear Grupo
           </button>
         </form>
       </Modal>

@@ -110,6 +110,8 @@ export const Home = () => {
 
   return (
     <div className="home-container">
+      {/* Fondo decorativo sutil para romper el blanco */}
+      <div className="home-bg-decoration"></div>
       
       {/* === SECCIÓN HEADER / PERFIL === */}
       <section className="home-welcome-card">
@@ -135,6 +137,7 @@ export const Home = () => {
 
         {/* Avatar editable */}
         <div className="home-avatar-section">
+          <div className="avatar-glow-ring"></div>
           <img src={currentAvatar} alt="Avatar" className="home-avatar-large" />
           <button className="home-btn-edit" onClick={() => setIsModalOpen(true)} title="Cambiar avatar">
             <Pencil size={16} />
@@ -147,19 +150,19 @@ export const Home = () => {
       
       <div className="home-quick-actions">
         <Link to="/library" className="home-action-card">
-          <div className="home-icon-box"><BookOpen size={28}/></div>
+          <div className="home-icon-box"><BookOpen size={26}/></div>
           <span className="home-action-label">Biblioteca</span>
         </Link>
         <Link to="/rooms" className="home-action-card">
-          <div className="home-icon-box"><Key size={28}/></div>
+          <div className="home-icon-box"><Key size={26}/></div>
           <span className="home-action-label">Reservar Aula</span>
         </Link>
         <Link to="/calendar" className="home-action-card">
-          <div className="home-icon-box"><Calendar size={28}/></div>
+          <div className="home-icon-box"><Calendar size={26}/></div>
           <span className="home-action-label">Mi Agenda</span>
         </Link>
         <Link to="/comunidad/comunidades" className="home-action-card">
-          <div className="home-icon-box"><Users size={28}/></div>
+          <div className="home-icon-box"><Users size={26}/></div>
           <span className="home-action-label">Comunidad</span>
         </Link>
       </div>
@@ -168,35 +171,38 @@ export const Home = () => {
       <div className="home-dashboard-grid">
         
         {/* 1. WIDGET AGENDA */}
-        <div className="home-widget-card">
+        <div className="home-widget-card widget-agenda">
           <div className="home-widget-header">
             <h3><Calendar size={18}/> Próximo Evento</h3>
             <Link to="/calendar" style={{color:'var(--accent)', fontSize:'0.85rem', fontWeight:600}}>Ver todo</Link>
           </div>
           {nextEvent ? (
             <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
-              {/* Caja de fecha estilo calendario */}
+              {/* Caja de fecha estilo calendario: Ahora usamos colores corporativos fuertes */}
               <div style={{
-                background:'#eff6ff', color:'var(--primary)', width:'60px', height:'60px',
-                borderRadius:'14px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'
+                background:'var(--primary)', color:'white', width:'60px', height:'60px',
+                borderRadius:'14px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+                boxShadow: '0 4px 10px rgba(0,11,61,0.2)'
               }}>
                 <span style={{fontSize:'1.4rem', fontWeight:'800', lineHeight:1}}>{new Date(nextEvent.date || nextEvent.start).getDate()}</span>
-                <small style={{fontSize:'0.7rem', fontWeight:'700', textTransform:'uppercase'}}>MES</small>
+                <small style={{fontSize:'0.65rem', fontWeight:'700', textTransform:'uppercase', opacity: 0.8}}>MES</small>
               </div>
               <div>
-                <h4 style={{margin:0, fontSize:'1rem', color:'var(--text-main)'}}>{nextEvent.title}</h4>
+                <h4 style={{margin:0, fontSize:'1rem', color:'var(--primary)', fontWeight:'700'}}>{nextEvent.title}</h4>
                 <p style={{margin:'4px 0 0', fontSize:'0.85rem', color:'var(--text-light)'}}>
                   {nextEvent.type === 'academic' ? 'Académico' : 'Evento'} • Todo el día
                 </p>
               </div>
             </div>
           ) : (
-            <p style={{color:'#94a3b8'}}>No tienes eventos próximos.</p>
+            <div style={{padding: '1rem 0', textAlign: 'center'}}>
+               <p style={{color:'#94a3b8', margin: 0}}>No tienes eventos próximos.</p>
+            </div>
           )}
         </div>
 
         {/* 2. WIDGET BIBLIOTECA (Estado de préstamos) */}
-        <div className="home-widget-card">
+        <div className="home-widget-card widget-library">
           <div className="home-widget-header">
             <h3><BookOpen size={18}/> Préstamos</h3>
             {/* Pasamos un state en el Link para que la biblioteca se abra directamente en la pestaña de mis reservas */}
@@ -204,12 +210,17 @@ export const Home = () => {
               Ver
             </Link>
           </div>
-          <div style={{textAlign:'center', padding:'1rem 0'}}>
+          <div style={{textAlign:'center', padding:'0.5rem 0'}}>
              {myReservationsCount > 0 ? (
-               <>
-                 <div style={{fontSize:'2.5rem', fontWeight:'800', color:'var(--accent)', lineHeight:1}}>{myReservationsCount}</div>
-                 <div style={{color:'var(--text-light)', fontSize:'0.9rem'}}>Libros activos</div>
-               </>
+               <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                 <div style={{
+                   fontSize:'2.8rem', fontWeight:'800', color:'var(--primary)', lineHeight:1,
+                   textShadow: '2px 2px 0px rgba(0,0,0,0.05)'
+                 }}>
+                   {myReservationsCount}
+                 </div>
+                 <div style={{color:'var(--accent)', fontWeight: '600', fontSize:'0.9rem', marginTop: '0.2rem'}}>Libros activos</div>
+               </div>
              ) : (
                <div style={{color:'#94a3b8', padding:'0.5rem'}}>
                  <p style={{margin:0}}>Todo devuelto.</p>
@@ -219,16 +230,19 @@ export const Home = () => {
         </div>
         
         {/* 3. WIDGET CLUBS / COMPETICIÓN (Estilo destacado) */}
-        <div className="home-widget-card" style={{background: 'linear-gradient(135deg, #000B3D 0%, #1e3a8a 100%)', color:'white'}}>
-           <h3 style={{color:'white', marginTop:0, display:'flex', alignItems:'center', gap:'8px'}}>
-             <Trophy size={18} color="#FFD700"/> Ligas EUNEIZ
+        <div className="home-widget-card widget-leagues" style={{background: 'linear-gradient(135deg, #000B3D 0%, #1e3a8a 100%)', color:'white'}}>
+           <div style={{position: 'absolute', top: 0, right: 0, opacity: 0.1}}>
+             <Trophy size={100} />
+           </div>
+           <h3 style={{color:'white', marginTop:0, display:'flex', alignItems:'center', gap:'8px', position: 'relative', zIndex: 1}}> Ligas EUNEIZ
            </h3>
-           <p style={{opacity:0.9, fontSize:'0.9rem', marginBottom:'1.5rem'}}>
+           <p style={{opacity:0.9, fontSize:'0.9rem', marginBottom:'1.5rem', position: 'relative', zIndex: 1}}>
              Revisa la clasificación y próximos partidos.
            </p>
            <Link to="/comunidad/competiciones" style={{
              marginTop:'auto', background:'white', color:'var(--primary)', padding:'0.8rem', 
-             borderRadius:'12px', textAlign:'center', fontWeight: 'bold', display: 'flex', alignItems:'center', justifyContent:'center', gap:'8px', textDecoration:'none'
+             borderRadius:'12px', textAlign:'center', fontWeight: 'bold', display: 'flex', alignItems:'center', justifyContent:'center', gap:'8px', textDecoration:'none',
+             position: 'relative', zIndex: 1, boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
            }}>
              Clasificación <ArrowRight size={16}/>
            </Link>
