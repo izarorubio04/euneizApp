@@ -1,30 +1,129 @@
-.profile-container {
-  padding: 50px;
-  display: flex;
-  justify-content: center;
+/* Contenedor de la página: le doy padding abajo para que respire */
+.profile-page {
+  padding-bottom: 50px;
+  animation: fadeIn 0.4s ease-out; /* Que aparezca suavemente */
 }
 
-.profile-card {
-  border: 1px solid #ddd;
-  padding: 20px;
-  border-radius: 10px;
+/* Centro la tarjeta en la pantalla */
+.profile-content {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 0 1rem; /* Para que no toque los bordes en móvil */
+}
+
+/* === LA TARJETA === */
+.profile-card-simple {
+  background: white;
+  width: 100%;
+  max-width: 380px; /* Tamaño controlado, ni muy grande ni muy chica */
+  border-radius: 20px; /* Bordes bien redonditos */
+  padding: 2.5rem 2rem;
+  
+  /* Sombra elegante y borde sutil */
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  
+  /* Flexbox para poner todo en columna centrada */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.badge {
-  background-color: #d4edda;
-  color: #155724;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+/* El círculo del icono de usuario */
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  background: #f1f5f9; /* Gris muy clarito */
+  color: #64748b;     /* Gris icono */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); /* Sombrita interior */
 }
 
-.logout-btn {
-  margin-top: 20px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+/* Info del usuario */
+.profile-info {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: #cad0d9;
+  font-weight: 700;
+  word-break: break-all; /* Por si el email es larguísimo */
+}
+
+/* La pastilla del rol (Alumno/Admin) */
+.role-pill {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  margin-bottom: 1.5rem;
+}
+
+.role-pill.student {
+  background: #e0f2fe; /* Azul suave */
+  color: #0369a1;
+}
+
+.role-pill.admin {
+  background: #fef3c7; /* Amarillo suave */
+  color: #b45309;
+}
+
+/* Fila de estado (Miembro verificado) */
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #166534; /* Verde oscuro */
+  background: #dcfce7; /* Verde muy suave */
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* === BOTÓN CERRAR SESIÓN === */
+.btn-logout-simple {
+  width: 100%;
+  padding: 14px;
+  background: #fff1f2; /* Fondo rojo casi blanco */
+  color: #e11d48;      /* Texto rojo */
+  border: 1px solid #fda4af;
+  border-radius: 12px;
+  
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  
+  transition: all 0.2s;
+}
+
+.btn-logout-simple:hover {
+  background: #e11d48; /* Al pasar el ratón se pone rojo */
+  color: white;        /* Y el texto blanco */
+  transform: translateY(-2px); /* Se levanta un poquito */
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

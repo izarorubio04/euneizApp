@@ -192,7 +192,7 @@ export const Login = () => {
 
       </div>
       
-      <p className="footer-credits">© 2024 Euneiz Hub Project</p>
+      <p className="footer-credits">© 2026 Euneiz Hub Project</p>
     </div>
   );
 };
