@@ -28,7 +28,7 @@
 }
 
 .cal-main-header p {
-  color: var(--text-light); /* Usamos variable global */
+  color: var(--text-light);
   margin-top: 0.5rem;
 }
 

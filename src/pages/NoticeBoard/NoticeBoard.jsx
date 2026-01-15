@@ -3,7 +3,7 @@ import "./NoticeBoard.css";
 import { useAuth } from "../../context/AuthContext";
 
 // --- FIREBASE & CONFIG ---
-// Importamos lo vital para que la base de datos no explote
+// Importamos la instancia de la base de datos y los métodos necesarios de Firestore
 import { db } from "../../firebase/config";
 import { 
   collection, addDoc, deleteDoc, updateDoc, 
@@ -11,27 +11,25 @@ import {
 } from "firebase/firestore";
 
 // --- COMPONENTES & CONSTANTES ---
-// Me traigo la lista de admins (profes y delegados) y mis componentes bonitos
+// Importamos la lista de administradores para gestionar permisos y los componentes de UI reutilizables
 import { ADMIN_EMAILS } from "../../config/constants"; 
 import PageHeader from "../../components/UI/PageHeader";
 import Modal from "../../components/UI/Modal";
 
 // --- ICONOS (LUCIDE) ---
-// Usamos Lucide porque son mucho más aesthetic que los de FontAwesome
 import { 
   Megaphone, PartyPopper, Beer, Car, Home, 
   BadgeEuro, Search, Package, Plus, Pin, 
-  MessageCircle, Trash2, CheckCircle, Calendar as CalIcon, Inbox as InboxIcon,
-  X // La X por si acaso, aunque el modal ya trae una
+  MessageCircle, Trash2, CheckCircle, Calendar as CalIcon, Inbox as InboxIcon
 } from "lucide-react";
 
-// --- CONFIG DE CATEGORÍAS ---
-// Aquí defino los colorinchis y los iconos de cada tema.
-// Si quiero añadir "Apuntes", solo tengo que meter una línea más aquí y listo.
+// --- CONFIGURACIÓN DE CATEGORÍAS ---
+// Objeto de configuración para mapear cada tipo de anuncio con su etiqueta, icono y color.
+// Esto facilita añadir nuevas categorías en el futuro sin tocar la lógica del renderizado.
 const CATEGORIES = {
   secretaria: { label: "Avisos Secretaría", icon: <Megaphone size={18} />, color: "#F1595C", adminOnly: true },
   eventos:    { label: "Eventos Uni",       icon: <PartyPopper size={18}/>, color: "#3498db", adminOnly: false },
-  social:     { label: "Social",            icon: <Beer size={18} />,       color: "#e84393", adminOnly: false }, // La categoría más importante, obvio
+  social:     { label: "Social",            icon: <Beer size={18} />,       color: "#e84393", adminOnly: false }, 
   carpooling: { label: "Carpooling",        icon: <Car size={18} />,        color: "#2ecc71", adminOnly: false },
   vivienda:   { label: "Vivienda",          icon: <Home size={18} />,       color: "#00cec9", adminOnly: false },
   venta:      { label: "Compra-Venta",      icon: <BadgeEuro size={18} />,  color: "#9b59b6", adminOnly: false },
@@ -41,25 +39,28 @@ const CATEGORIES = {
 
 export const NoticeBoard = () => {
   const { user } = useAuth();
-  // Chequeamos si el user es VIP (Admin) para dejarle borrar cosas o aprobar posts
+  
+  // Verificamos si el usuario actual tiene permisos de administrador (profesores/delegados)
+  // Esto servirá para mostrar opciones de moderación en la interfaz.
   const isUserAdmin = user && ADMIN_EMAILS.includes(user.email);
 
-  // --- ESTADOS (La locura de React) ---
-  const [posts, setPosts] = useState([]); // Aquí guardamos todos los anuncios
-  const [loading, setLoading] = useState(true); // Para el spinner de carga
-  const [filter, setFilter] = useState("all"); // Filtro: 'all', 'mine' o categorías
+  // --- ESTADOS ---
+  const [posts, setPosts] = useState([]); // Almacena la lista completa de anuncios
+  const [loading, setLoading] = useState(true); // Controla el estado de carga inicial
+  const [filter, setFilter] = useState("all"); // Filtro activo: 'all', 'mine' o por categoría específica
   
-  // Control de las ventanas modales (abierto/cerrado)
-  const [isModalOpen, setIsModalOpen] = useState(false); // El de crear anuncio
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // El de enviar mensajito
-  const [selectedNotice, setSelectedNotice] = useState(null); // <--- NUEVO: Para ver el anuncio en grande (Super útil)
+  // Estados para controlar la visibilidad de los modales
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal de creación de anuncio
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // Modal de contacto
+  const [selectedNotice, setSelectedNotice] = useState(null); // Anuncio seleccionado para ver en detalle
   
-  // Cositas para el chat privado
-  const [contactTarget, setContactTarget] = useState(null); // A quién le escribo
-  const [messageText, setMessageText] = useState(""); // Qué le escribo
-  const [isSending, setIsSending] = useState(false); // Para que no le den al botón mil veces
+  // Estados para el sistema de mensajería interna
+  const [contactTarget, setContactTarget] = useState(null); // Destinatario del mensaje
+  const [messageText, setMessageText] = useState(""); // Contenido del mensaje
+  const [isSending, setIsSending] = useState(false); // Evita envíos duplicados mientras se procesa
 
-  // Los Pines se guardan en el LocalStorage para que no se pierdan al recargar (magia negra)
+  // Sistema de persistencia para los anuncios fijados (Pines)
+  // Utilizamos localStorage para recordar qué anuncios ha fijado el usuario entre sesiones.
   const [pinnedIds, setPinnedIds] = useState(() => {
     try {
       const saved = localStorage.getItem("my_pinned_notices");
@@ -67,46 +68,49 @@ export const NoticeBoard = () => {
     } catch { return []; }
   });
 
-  // Estado del formulario (un objeto gigante para no tener 20 variables sueltas)
+  // Estado único para manejar todos los campos del formulario de nuevo anuncio
   const [formData, setFormData] = useState({
     type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: ""
   });
 
-  // 1. EFECTO: Cargar posts en tiempo real
-  // Esto es lo mejor de Firebase: si alguien publica, me sale al instante sin refrescar la página.
+  // 1. EFECTO: Suscripción a Firestore
+  // Utilizamos onSnapshot para escuchar cambios en tiempo real en la colección 'notices'.
+  // Esto actualiza la interfaz automáticamente cuando alguien publica un nuevo anuncio.
   useEffect(() => {
     const q = query(collection(db, "notices"), orderBy("date", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setPosts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
     });
-    return () => unsubscribe(); // Limpieza para no dejar procesos zombies
+    // Es importante ejecutar la función de limpieza (unsubscribe) al desmontar el componente
+    return () => unsubscribe(); 
   }, []);
 
-  // 2. EFECTO: Guardar los pines
-  // Cada vez que pincho en la chincheta, actualizo el almacenamiento local
+  // 2. EFECTO: Sincronización de Pines
+  // Cada vez que cambia la lista de pines, actualizamos el localStorage.
   useEffect(() => {
     localStorage.setItem("my_pinned_notices", JSON.stringify(pinnedIds));
   }, [pinnedIds]);
 
-  // Función para pinear/despinear (me encanta esta palabra inventada)
+  // Función para alternar el estado de fijado de un anuncio
   const togglePin = (id) => {
     setPinnedIds(prev => prev.includes(id) ? prev.filter(p => p !== id) : [id, ...prev]);
   };
 
-  // Manejador genérico para los inputs del formulario
+  // Manejador genérico para actualizar el estado del formulario según el input modificado
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. PUBLICAR ANUNCIO (El momento de la verdad)
+  // 3. FUNCIÓN DE PUBLICACIÓN
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Que no se recargue la página por favor
-    if (!formData.title || !formData.desc) return alert("Rellena los campos obligatorios, ¡no seas vago!");
+    e.preventDefault();
+    if (!formData.title || !formData.desc) return alert("Por favor, completa los campos obligatorios.");
 
     try {
       const isSecretaria = formData.type === "secretaria";
-      // Si eres admin entras directo, si no... a la cola de moderación
+      // Los anuncios de administración o secretaría se aprueban automáticamente.
+      // El resto pasa a estado 'pending' para moderación.
       const initialStatus = (isUserAdmin || isSecretaria) ? "approved" : "pending";
 
       await addDoc(collection(db, "notices"), {
@@ -117,7 +121,7 @@ export const NoticeBoard = () => {
         date: Date.now(),
         eventDate: formData.eventDate || null,
         status: initialStatus,
-        meta: { // Aquí metemos todo lo extra para que quede ordenadito
+        meta: { // Agrupamos metadatos opcionales en un objeto separado
           price: formData.price,
           origen: formData.origin,
           destino: formData.dest,
@@ -126,23 +130,25 @@ export const NoticeBoard = () => {
       });
 
       setIsModalOpen(false);
-      setFilter("all"); // Te cambio al filtro 'todos' para que veas tu obra de arte
+      setFilter("all"); // Restablecemos el filtro para que el usuario pueda ver su publicación
+      // Reiniciamos el formulario
       setFormData({ type: "eventos", title: "", desc: "", price: "", origin: "", dest: "", contact: "", eventDate: "" });      
 
-      if (initialStatus === "pending") alert("✅ Anuncio enviado a moderación. (Paciencia, que los admins duermen)");
+      if (initialStatus === "pending") alert("✅ Anuncio enviado correctamente. Está pendiente de aprobación.");
       
     } catch (error) {
-      console.error("Error al publicar (pánico):", error);
+      console.error("Error al publicar el anuncio:", error);
     }
   };
 
-  // 4. CHAT / MENSAJERÍA
+  // 4. LÓGICA DE MENSAJERÍA
+  // Prepara el modal de contacto con los datos del anuncio seleccionado
   const handleOpenContact = (post) => {
     setContactTarget({ email: post.author, title: post.title, postId: post.id });
     setMessageText("");
     setIsSending(false); 
     setIsContactModalOpen(true);
-    // Si estaba viendo el detalle, lo cierro para que no se superpongan los modales
+    // Cerramos el modal de detalle para evitar superposición
     setSelectedNotice(null); 
   };
 
@@ -162,51 +168,57 @@ export const NoticeBoard = () => {
         read: false
       });
       
-      // Un pequeño delay para que parezca que procesamos algo (y para UX)
+      // Simulamos un pequeño retraso para mejorar la experiencia de usuario
       setTimeout(() => {
         setIsSending(false);
         setIsContactModalOpen(false);
-        alert("✅ Mensaje enviado. ¡Suerte!");
+        alert("✅ Mensaje enviado correctamente.");
       }, 800);
 
     } catch (error) {
-      console.error("Error enviando mensaje", error);
+      console.error("Error enviando mensaje:", error);
       setIsSending(false);
     }
   };
 
-  // Gestión de borrar y aprobar (Solo para gente con poder)
+  // Funciones de administración (Borrar y Aprobar)
   const deletePost = async (id) => {
-    if(!window.confirm("¿Seguro que quieres borrarlo? No hay vuelta atrás...")) return;
+    if(!window.confirm("¿Estás seguro de que quieres eliminar este anuncio?")) return;
     await deleteDoc(doc(db, "notices", id));
-    if(selectedNotice?.id === id) setSelectedNotice(null); // Si lo estaba mirando, cierro el modal
+    // Si el anuncio eliminado estaba abierto en detalle, lo cerramos
+    if(selectedNotice?.id === id) setSelectedNotice(null); 
   };
 
   const approvePost = async (id) => {
     await updateDoc(doc(db, "notices", id), { status: "approved" });
   };
 
-  // Lógica de Filtrado (Matemáticas puras)
+  // Lógica de Filtrado de Anuncios
   const visiblePosts = posts.filter(post => {
     const isOwner = user && post.author === user.email;
+    
+    // Si el filtro es 'mine', solo mostramos mis anuncios (incluso los pendientes)
     if (filter === 'mine') return isOwner;
-    // Solo mostramos si es admin, es tuyo o ya está aprobado
+    
+    // Para el resto de filtros, solo mostramos si:
+    // 1. Soy admin, 2. Es mío, o 3. Está aprobado.
     const statusOk = isUserAdmin || isOwner || post.status === "approved";
     const typeOk = filter === "all" ? true : post.type === filter;
+    
     return statusOk && typeOk;
   });
 
-  // Separamos los pineados del resto para que salgan arriba (Top Tier)
+  // Separamos los anuncios fijados para mostrarlos con prioridad
   const myPinnedPosts = filter === 'mine' ? [] : visiblePosts.filter(p => pinnedIds.includes(p.id));
   const feedPosts = filter === 'mine' ? visiblePosts : visiblePosts.filter(p => !pinnedIds.includes(p.id));
 
-  if (loading) return <div className="nb-container" style={{padding: '2rem', textAlign:'center'}}>Cargando cotilleos...</div>;
+  if (loading) return <div className="nb-container" style={{padding: '2rem', textAlign:'center'}}>Cargando tablón...</div>;
 
   return (
     <div className="nb-container">
       <PageHeader title="Tablón de Anuncios" subtitle="Mantente al día con lo que pasa en el campus" />
       
-      {/* --- BOTONES DE FILTRO --- */}
+      {/* --- SELECCIÓN DE FILTROS --- */}
       <div className="nb-filters">
         <button className={`filter-pill ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter("all")}>Todo</button>
         <button className={`filter-pill ${filter === 'mine' ? 'active' : ''}`} onClick={() => setFilter("mine")}>Mis Anuncios</button>
@@ -217,9 +229,9 @@ export const NoticeBoard = () => {
         ))}
       </div>
 
-      {/* --- GRID PRINCIPAL --- */}
+      {/* --- GRID DE CONTENIDO --- */}
       <main className="nb-grid">
-        {/* Sección de PINES (Mis favoritos) */}
+        {/* Sección de Anuncios Fijados (Pines) */}
         {myPinnedPosts.length > 0 && filter !== 'mine' && (
           <div className="nb-section-pinned">
             <h3><Pin size={20} /> Anuncios Fijados</h3>
@@ -235,14 +247,14 @@ export const NoticeBoard = () => {
                   onDelete={deletePost} 
                   onApprove={approvePost} 
                   onContact={() => handleOpenContact(post)} 
-                  onClick={() => setSelectedNotice(post)} // Click para abrir modal
+                  onClick={() => setSelectedNotice(post)} // Abre el modal de detalle
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* FEED NORMAL (El resto de mortales) */}
+        {/* Feed General de Anuncios */}
         <div className="feed-grid">
           {feedPosts.map(post => (
             <Card 
@@ -262,13 +274,13 @@ export const NoticeBoard = () => {
           {feedPosts.length === 0 && myPinnedPosts.length === 0 && (
              <div className="empty-feed">
                <span style={{fontSize: '2rem'}}><InboxIcon size={24}/></span>
-               <p style={{color: 'var(--text-light)'}}>Nada por aquí... ¡Sé el primero en publicar!</p>
+               <p style={{color: 'var(--text-light)'}}>No hay anuncios en esta categoría.</p>
              </div>
           )}
         </div>
       </main>
 
-      {/* Botón Flotante (FAB) */}
+      {/* Botón Flotante para crear nuevo anuncio */}
       <button className="fab-add" onClick={() => setIsModalOpen(true)} title="Crear anuncio"><Plus size={32} /></button>
 
       {/* --- MODAL CREAR ANUNCIO --- */}
@@ -278,7 +290,7 @@ export const NoticeBoard = () => {
             <label>Categoría</label>
             <div className="cat-selector">
               {Object.entries(CATEGORIES).map(([key, config]) => {
-                if (config.adminOnly && !isUserAdmin) return null; // Si no eres admin, no ves lo de secretaría
+                if (config.adminOnly && !isUserAdmin) return null; // Ocultamos categorías restringidas
                 return (
                   <label key={key} className={`cat-radio ${formData.type === key ? 'selected' : ''}`} style={{'--cat-color': config.color}}>
                     <input type="radio" name="type" value={key} checked={formData.type === key} onChange={handleInputChange} />
@@ -290,10 +302,10 @@ export const NoticeBoard = () => {
           </div>
           <div className="form-group">
             <label>Título</label>
-            <input name="title" value={formData.title} onChange={handleInputChange} required placeholder="Título molón..." />
+            <input name="title" value={formData.title} onChange={handleInputChange} required placeholder="Título del anuncio..." />
           </div>
           
-          {/* Inputs condicionales (solo salen si eliges Eventos, Venta, etc.) */}
+          {/* Renderizado condicional de campos según el tipo de anuncio */}
           {(formData.type === "eventos" || formData.type === "social") && (
             <div className="form-group">
               <label>Fecha del Evento <span style={{color:'red'}}>*</span></label>
@@ -309,7 +321,7 @@ export const NoticeBoard = () => {
           
           <div className="form-group">
             <label>Descripción</label>
-            <textarea name="desc" value={formData.desc} onChange={handleInputChange} rows={3} required placeholder="Cuéntanos más..."></textarea>
+            <textarea name="desc" value={formData.desc} onChange={handleInputChange} rows={3} required placeholder="Detalles del anuncio..."></textarea>
           </div>
           <button type="submit" className="btn-publish">Publicar Anuncio</button>
         </form>
@@ -322,19 +334,19 @@ export const NoticeBoard = () => {
         </p>
         <form onSubmit={handleSendMessage} className="post-form">
           <div className="form-group">
-            <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} rows={5} placeholder="Hola, me interesa tu anuncio..." required disabled={isSending}></textarea>
+            <textarea value={messageText} onChange={(e) => setMessageText(e.target.value)} rows={5} placeholder="Escribe tu mensaje aquí..." required disabled={isSending}></textarea>
           </div>
           <button type="submit" className="btn-publish" disabled={isSending}>{isSending ? "Enviando..." : "Enviar Mensaje"}</button>
         </form>
       </Modal>
 
-      {/* --- MODAL DE DETALLE (EL NUEVO) --- */}
-      {/* Aquí mostramos toda la info cuando haces click en una tarjeta */}
+      {/* --- MODAL DE DETALLE --- */}
+      {/* Vista ampliada del anuncio al hacer click */}
       {selectedNotice && (
         <Modal isOpen={!!selectedNotice} onClose={() => setSelectedNotice(null)} title="Detalle del Anuncio">
           <div className="notice-detail-content">
             
-            {/* Header del modal con icono y fecha */}
+            {/* Cabecera del detalle con categoría y fecha */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
               <span style={{ 
                 color: CATEGORIES[selectedNotice.type]?.color || '#666', 
@@ -350,7 +362,7 @@ export const NoticeBoard = () => {
 
             <h2 style={{ fontSize: '1.5rem', margin: '0 0 1rem 0', color: '#1e293b' }}>{selectedNotice.title}</h2>
 
-            {/* Datos extra (precio, fecha evento, ruta...) */}
+            {/* Metadatos adicionales (Precio, Rutas, etc.) */}
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
               {selectedNotice.eventDate && (
                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#64748b' }}>
@@ -369,7 +381,7 @@ export const NoticeBoard = () => {
               )}
             </div>
 
-            {/* El texto largo con scroll por si se enrollan mucho */}
+            {/* Descripción completa con scroll si es necesario */}
             <div style={{ 
               background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', 
               lineHeight: '1.6', color: '#334155', whiteSpace: 'pre-wrap', marginBottom: '2rem',
@@ -378,7 +390,7 @@ export const NoticeBoard = () => {
               {selectedNotice.desc}
             </div>
 
-            {/* Pie del modal con autor y botón contactar */}
+            {/* Footer del detalle con autor y botón de contacto */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
                <div style={{display:'flex', flexDirection:'column'}}>
                   <span style={{fontSize:'0.8rem', color:'#94a3b8'}}>Publicado por</span>
@@ -387,12 +399,12 @@ export const NoticeBoard = () => {
 
                {user?.email !== selectedNotice.author && (
                  <button 
-                    onClick={() => handleOpenContact(selectedNotice)}
-                    style={{
-                      background: 'var(--primary)', color: 'white', border: 'none', 
-                      padding: '10px 20px', borderRadius: '10px', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600'
-                    }}
+                   onClick={() => handleOpenContact(selectedNotice)}
+                   style={{
+                     background: 'var(--primary)', color: 'white', border: 'none', 
+                     padding: '10px 20px', borderRadius: '10px', cursor: 'pointer',
+                     display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600'
+                   }}
                  >
                    <MessageCircle size={18}/> Contactar
                  </button>
@@ -406,14 +418,15 @@ export const NoticeBoard = () => {
   );
 };
 
-// --- SUBCOMPONENTE CARD (Tarjeta Individual) ---
+// --- SUBCOMPONENTE CARD ---
+// Componente reutilizable para renderizar cada tarjeta de anuncio en el grid
 const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onApprove, onContact, onClick }) => {
   const config = CATEGORIES[post.type] || CATEGORIES.otros;
   const isOwner = currentUserEmail && post.author === currentUserEmail;
   const canDelete = isAdmin || isOwner;
 
   return (
-    // IMPORTANTE: Le he puesto onClick para abrir el modal de detalle
+    // Utilizamos stopPropagation en los botones internos para evitar que se abra el modal al interactuar con ellos
     <div 
       className={`notice-card ${post.status === 'pending' ? 'pending-card' : ''}`} 
       style={{'--accent-color': config.color, cursor: 'pointer'}}
@@ -426,7 +439,6 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
           <span className="card-badge" style={{color: config.color, backgroundColor: `${config.color}15`}}>
             {config.icon} {config.label}
           </span>
-          {/* OJO: stopPropagation aquí es CLAVE para que al dar a la chincheta no se abra el modal gigante */}
           <button className={`btn-pin ${isPinned ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onPin(); }} title="Fijar">
             <Pin size={18} fill={isPinned ? "#F1595C" : "none"} />
           </button>
@@ -451,7 +463,7 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
             <div className="price-tag" style={{color: config.color}}>{post.meta.price} €</div>
         )}
 
-        {/* Solo mostramos un trocito, para verlo entero click en la tarjeta */}
+        {/* Mostramos una previsualización de la descripción */}
         <p className="card-desc">{post.desc}</p>
         
         <div className="card-footer">
@@ -460,7 +472,6 @@ const Card = ({ post, isAdmin, currentUserEmail, isPinned, onPin, onDelete, onAp
           </span>
 
           <div className="card-actions">
-             {/* Acordaos del stopPropagation en TODOS los botones de acción */}
              {isAdmin && post.status === 'pending' && (
                <button className="icon-btn approve" onClick={(e) => { e.stopPropagation(); onApprove(post.id); }} title="Aprobar">
                  <CheckCircle size={18}/>

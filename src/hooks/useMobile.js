@@ -1,3 +1,4 @@
+/*Para detectar si el navegador está en tamaño móvil o no*/
 import { useState, useEffect } from 'react';
 
 export const useIsMobile = () => {

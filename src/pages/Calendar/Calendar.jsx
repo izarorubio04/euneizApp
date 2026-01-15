@@ -37,7 +37,6 @@ export const Calendar = () => {
       const events = snapshot.docs.map(doc => {
         const data = doc.data();
         
-        // ¡Ojo aquí! Algunos eventos antiguos no tenían 'eventDate', así que por si acaso
         // uso la fecha de creación 'date' como fallback para que no explote.
         const rawDate = data.eventDate ? data.eventDate : new Date(data.date).toISOString().split('T')[0];
 

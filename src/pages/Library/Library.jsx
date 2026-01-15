@@ -111,7 +111,7 @@ export const Library = () => {
 
   // Dar o quitar like
   const toggleFavorite = async (e, bookId) => {
-    e.stopPropagation(); // ¡Ojo! Esto evita que se abra el modal del libro cuando solo quiero dar like
+    e.stopPropagation(); // Esto evita que se abra el modal del libro cuando solo quiero dar like
     const favId = `${user.email}_${bookId}`; // Me invento un ID único combinando email y libro
     
     if (userFavorites.includes(bookId)) {

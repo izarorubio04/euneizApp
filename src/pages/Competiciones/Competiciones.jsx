@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { competiciones } from "./data";
-import "./Competiciones.css"; // Importamos el nuevo CSS
+import "./Competiciones.css";
 
 // Iconos
 import { 
