@@ -323,12 +323,14 @@ export const Rooms = () => {
             
             {/* Controles Admin (Fecha y Buscador) */}
             <div className="admin-controls">
-              <div className="control-group" style={{marginBottom:0}}>
-                <label>📅 Fecha a gestionar</label>
+              <div className="control-group" style={{marginBottom:0, flex: 1}}>
+                {/* AQUI EL CAMBIO: Icono Lucide y clase correcta */}
+                <label className="control-label"><Calendar size={16}/> Fecha a gestionar</label>
                 <input type="date" className="date-input" value={date} onChange={e => setDate(e.target.value)} />
               </div>
+              
               <div className="search-box-admin">
-                <Search size={18}/>
+                <Search size={18} className="search-icon-admin"/>
                 <input 
                   placeholder="Buscar código, email o aula..." 
                   value={adminSearch}

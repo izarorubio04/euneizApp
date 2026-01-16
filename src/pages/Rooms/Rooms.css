@@ -1,5 +1,4 @@
 /* === VARIABLES LOCALES === */
-/* Solo definimos colores específicos de este módulo */
 :root {
   --success: #10b981;
   --warning: #f59e0b;
@@ -9,8 +8,9 @@
 /* === LAYOUT PRINCIPAL === */
 .rooms-container {
   padding-bottom: 80px;
-  /* Animación global */
   animation: fadeIn 0.4s ease-out;
+  width: 100%; /* Asegura que no desborde */
+  box-sizing: border-box;
 }
 
 /* GRID LAYOUT (2 Columnas: Panel vs Tickets) */
@@ -20,13 +20,14 @@
   gap: 2rem;
 }
 
+/* RESPONSIVE: En móvil pasa a 1 columna */
 @media (max-width: 900px) {
   .rooms-layout {
     grid-template-columns: 1fr;
   }
 }
 
-/* === PUNTOS DE ESTADO (VISUALES) === */
+/* === PUNTOS DE ESTADO === */
 .dot-solid {
   display: inline-block;
   width: 10px;
@@ -36,32 +37,31 @@
   flex-shrink: 0;
 }
 
-.dot-solid.pending {
-  background-color: var(--warning);
+.dot-solid.pending { 
+  background-color: var(--warning); 
 }
 
-.dot-solid.active {
-  background-color: var(--success);
+.dot-solid.active { 
+  background-color: var(--success); 
 }
 
-.dot-solid.finished {
-  background-color: #94a3b8;
+.dot-solid.finished { 
+  background-color: #94a3b8; 
 }
 
-/* Textos de estado (Ticket Alumno) */
 .status-text-pending {
-  color: #d97706;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
+  color: #d97706; 
+  display: flex; 
+  align-items: center; 
+  font-weight: 600; 
   font-size: 0.85rem;
 }
 
 .status-text-active {
-  color: var(--success);
-  display: flex;
-  align-items: center;
-  font-weight: 600;
+  color: var(--success); 
+  display: flex; 
+  align-items: center; 
+  font-weight: 600; 
   font-size: 0.85rem;
 }
 
@@ -73,16 +73,16 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 }
 
-.control-group {
-  margin-bottom: 2rem;
+.control-group { 
+  margin-bottom: 2rem; 
 }
 
 .control-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  color: var(--primary);
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-weight: 700; 
+  color: var(--primary); 
   margin-bottom: 1rem;
 }
 
@@ -91,26 +91,27 @@
   padding: 0.8rem;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  font-family: inherit;
+  font-family: inherit; 
   font-size: 1rem;
-  /* Importante para que no se salga del contenedor */
   box-sizing: border-box;
+  background: white; 
+  color: var(--text-main);
 }
 
 .warning-badge {
-  margin-top: 10px;
-  background: #fef2f2;
-  color: #ef4444;
-  padding: 0.8rem;
+  margin-top: 10px; 
+  background: #fef2f2; 
+  color: #ef4444; 
+  padding: 0.8rem; 
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-weight: 600; 
   font-size: 0.9rem;
 }
 
-/* Selector de Horas (Grid Chips) */
+/* Selector de Horas */
 .time-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -118,235 +119,237 @@
 }
 
 .time-chip {
-  background: var(--bg-gray);
-  border: 1px solid transparent;
-  padding: 0.6rem;
+  background: var(--bg-gray); 
+  border: 1px solid transparent; 
+  padding: 0.6rem; 
   border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  color: #64748b;
+  cursor: pointer; 
+  font-weight: 600; 
+  color: #64748b; 
   transition: all 0.2s;
 }
 
-.time-chip:hover {
-  background: #e2e8f0;
+.time-chip:hover { 
+  background: #e2e8f0; 
 }
 
 .time-chip.selected {
-  background: var(--primary);
-  color: white;
+  background: var(--primary); 
+  color: white; 
   box-shadow: 0 4px 10px rgba(0, 11, 61, 0.2);
 }
 
-/* Selector de Aulas (Grid) */
+/* Selector de Aulas */
 .rooms-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
   gap: 1rem;
 }
 
 .room-card {
-  aspect-ratio: 1/1;
-  border: 2px solid #e2e8f0;
-  background: white;
+  aspect-ratio: 1/1; 
+  border: 2px solid #e2e8f0; 
+  background: white; 
   border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
   justify-content: center;
-  cursor: pointer;
+  cursor: pointer; 
   transition: all 0.2s;
 }
 
 .room-card:hover:not(:disabled) {
-  border-color: var(--primary);
-  transform: translateY(-3px);
+  border-color: var(--primary); 
+  transform: translateY(-3px); 
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.room-number {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--primary);
+.room-number { 
+  font-size: 1.5rem; 
+  font-weight: 800; 
+  color: var(--primary); 
 }
 
-.room-status {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #94a3b8;
-  margin-top: 4px;
+.room-status { 
+  font-size: 0.7rem; 
+  font-weight: 700; 
+  color: #94a3b8; 
+  margin-top: 4px; 
 }
 
-/* Estados Visuales del Aula */
-.room-card.taken {
-  background: #f1f5f9;
-  border-color: transparent;
-  cursor: not-allowed;
-  opacity: 0.7;
+/* Estados Aulas */
+.room-card.taken { 
+  background: #f1f5f9; 
+  border-color: transparent; 
+  cursor: not-allowed; 
+  opacity: 0.7; 
 }
 
-.room-card.taken .room-number {
-  color: #cbd5e1;
+.room-card.taken .room-number { 
+  color: #cbd5e1; 
 }
 
-.room-card.taken .room-status {
-  color: #ef4444;
+.room-card.taken .room-status { 
+  color: #ef4444; 
 }
 
-.room-card.mine {
-  background: #ecfdf5;
-  border-color: var(--success);
+.room-card.mine { 
+  background: #ecfdf5; 
+  border-color: var(--success); 
 }
 
-.room-card.mine .room-number {
-  color: var(--success);
+.room-card.mine .room-number { 
+  color: var(--success); 
 }
 
-.room-card.mine .room-status {
-  color: var(--success);
+.room-card.mine .room-status { 
+  color: var(--success); 
 }
 
-.room-card.available .room-status {
-  color: var(--success);
+.room-card.available .room-status { 
+  color: var(--success); 
 }
 
-/* Estado cerrado (fin de semana) */
 .closed-state {
-  text-align: center;
-  padding: 2rem;
-  color: #94a3b8;
-  font-style: italic;
-  background: #f8fafc;
+  text-align: center; 
+  padding: 2rem; 
+  color: #94a3b8; 
+  font-style: italic; 
+  background: #f8fafc; 
   border-radius: 12px;
 }
 
 /* === PANEL DERECHO: MIS TICKETS === */
-.my-tickets-panel h3 {
-  margin: 0 0 1.5rem 0;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.my-tickets-panel h3 { 
+  margin: 0 0 1.5rem 0; 
+  color: var(--primary); 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
 }
 
-.tickets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.tickets-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 1rem; 
 }
 
-/* Estilo Tarjeta Ticket */
 .ticket-card {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: white; 
+  border: 1px solid #e2e8f0; 
   border-left: 5px solid var(--accent);
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  border-radius: 12px; 
+  padding: 1rem; 
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); 
   position: relative;
 }
 
-/* Estado activo cambia el color del borde */
-.ticket-card.status-active {
-  border-left-color: var(--success);
+.ticket-card.status-active { 
+  border-left-color: var(--success); 
 }
 
 .ticket-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
   margin-bottom: 0.8rem;
-  border-bottom: 1px dashed #e2e8f0;
+  border-bottom: 1px dashed #e2e8f0; 
   padding-bottom: 0.8rem;
 }
 
-.ticket-room {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--primary);
+.ticket-room { 
+  font-size: 1.1rem; 
+  font-weight: 800; 
+  color: var(--primary); 
 }
 
-.btn-cancel-ticket {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
+.btn-cancel-ticket { 
+  background: none; 
+  border: none; 
+  color: #94a3b8; 
+  cursor: pointer; 
+  padding: 4px; 
 }
 
-.btn-cancel-ticket:hover {
-  color: #ef4444;
-  background-color: #fee2e2;
-  border-radius: 50%;
+.btn-cancel-ticket:hover { 
+  color: #ef4444; 
+  background-color: #fee2e2; 
+  border-radius: 50%; 
 }
 
-.ticket-body {
-  margin-bottom: 1rem;
+.ticket-body { 
+  margin-bottom: 1rem; 
 }
 
-.ticket-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-bottom: 1rem;
+.ticket-info { 
+  display: flex; 
+  justify-content: space-between; 
+  font-size: 0.85rem; 
+  color: #64748b; 
+  margin-bottom: 1rem; 
 }
 
-.ticket-code-box {
-  background: #f1f5f9;
-  padding: 0.8rem;
-  border-radius: 8px;
-  text-align: center;
+.ticket-code-box { 
+  background: #f1f5f9; 
+  padding: 0.8rem; 
+  border-radius: 8px; 
+  text-align: center; 
 }
 
-.code-label {
-  display: block;
-  font-size: 0.65rem;
-  color: #64748b;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
+.code-label { 
+  display: block; 
+  font-size: 0.65rem; 
+  color: #64748b; 
+  letter-spacing: 1px; 
+  margin-bottom: 4px; 
 }
 
-.code-value {
-  font-family: monospace;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--primary);
-  letter-spacing: 2px;
+.code-value { 
+  font-family: monospace; 
+  font-size: 1.4rem; 
+  font-weight: 800; 
+  color: var(--primary); 
+  letter-spacing: 2px; 
 }
 
-.ticket-footer {
-  font-size: 0.75rem;
-  color: var(--success);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.ticket-footer { 
+  font-size: 0.75rem; 
+  color: var(--success); 
+  font-weight: 600; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
 }
 
 .info-box-return {
-  margin-top: 2rem;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  color: #b45309;
-  padding: 1rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  margin-top: 2rem; 
+  background: #fffbeb; 
+  border: 1px solid #fcd34d; 
+  color: #b45309; 
+  padding: 1rem; 
+  border-radius: 12px; 
+  font-size: 0.85rem; 
   line-height: 1.4;
 }
 
-/* === MODO ADMIN === */
+/* === MODO ADMIN (FIX RESPONSIVE) === */
 .admin-rooms-panel {
   grid-column: 1 / -1;
-  background: white;
-  border-radius: 24px;
+  background: white; 
+  border-radius: 24px; 
   padding: 2rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  /* Asegura que el panel no se salga del ancho de pantalla */
+  max-width: 100%;
+  overflow: hidden; 
 }
 
+/* Controles Admin */
 .admin-controls {
   display: flex;
-  gap: 2rem;
+  flex-wrap: wrap; /* Clave: permite que bajen de línea si no caben */
+  gap: 1.5rem;
   margin-bottom: 2rem;
   align-items: flex-end;
   background: #f8fafc;
@@ -354,190 +357,198 @@
   border-radius: 16px;
 }
 
+/* Buscador Admin */
 .search-box-admin {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  gap: 10px;
+  flex: 2;
+  position: relative;
+  height: 46px;
+  min-width: 280px; /* Ancho mínimo para que no se aplaste */
+  box-sizing: border-box;
+}
+
+.search-icon-admin {
+  position: absolute; 
+  left: 16px; 
+  top: 50%; 
+  transform: translateY(-50%);
+  color: #94a3b8; 
+  pointer-events: none; 
+  z-index: 10;
 }
 
 .search-box-admin input {
-  border: none;
-  outline: none;
-  width: 100%;
-  font-size: 0.95rem;
+  width: 100%; 
+  height: 100%; 
+  padding: 0 1rem 0 3rem;
+  border-radius: 12px; 
+  border: 1px solid #e2e8f0; 
+  background: white;
+  font-family: inherit; 
+  font-size: 0.95rem; 
+  color: var(--text-main);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02); 
+  transition: all 0.2s;
+  box-sizing: border-box;
 }
 
-/* Tabla Admin */
-.admin-table-container h3 {
-  margin-top: 0;
-  color: var(--primary);
+.search-box-admin input:focus {
+  outline: none; 
+  border-color: var(--primary); 
+  box-shadow: 0 4px 12px rgba(0, 11, 61, 0.08);
+}
+
+/* === TABLA ADMIN RESPONSIVA === */
+.admin-table-container {
+  /* ESTO ES LA SOLUCIÓN: Scroll horizontal solo para la tabla */
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch; /* Suavidad en iOS */
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.admin-table-container h3 { 
+  margin-top: 0; 
+  color: var(--primary); 
+  padding: 1rem; 
 }
 
 .rooms-admin-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
+  /* Min-width para asegurar que no se apriete y fuerce el scroll */
+  min-width: 700px; 
 }
 
 .rooms-admin-table th {
-  text-align: left;
-  padding: 1rem;
-  color: #64748b;
+  text-align: left; 
+  padding: 1rem; 
+  color: #64748b; 
   font-size: 0.85rem;
-  text-transform: uppercase;
-  border-bottom: 2px solid #f1f5f9;
+  text-transform: uppercase; 
+  border-bottom: 2px solid #f1f5f9; 
+  white-space: nowrap;
 }
 
-.rooms-admin-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
+.rooms-admin-table td { 
+  padding: 1rem; 
+  border-bottom: 1px solid #f1f5f9; 
+  vertical-align: middle; 
 }
 
 /* Estilos de fila */
-.row-active {
-  background-color: #f0fdf4;
+.row-active { 
+  background-color: #f0fdf4; 
 }
 
-.row-finished {
-  opacity: 0.6;
+.row-finished { 
+  opacity: 0.6; 
 }
 
-/* Utilidades de texto */
-.font-bold {
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.font-mono {
-  font-family: monospace;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.text-small {
-  font-size: 0.9rem;
-  color: #475569;
-}
-
-.text-muted {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.badge-room {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-/* Pills de estado unificados */
+/* Pills y botones pequeños */
 .status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
+  display: inline-flex; 
+  align-items: center; 
+  padding: 4px 10px; 
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  font-size: 0.75rem; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  white-space: nowrap;
 }
 
-.status-pill.pending {
-  background: #fef3c7;
-  color: #b45309;
+.status-pill.pending { 
+  background: #fef3c7; 
+  color: #b45309; 
 }
 
-.status-pill.active {
-  background: #dcfce7;
-  color: #166534;
+.status-pill.active { 
+  background: #dcfce7; 
+  color: #166534; 
 }
 
-.status-pill.finished {
-  background: #f1f5f9;
-  color: #64748b;
+.status-pill.finished { 
+  background: #f1f5f9; 
+  color: #64748b; 
 }
 
-/* Botones Acción Admin */
-.action-buttons {
-  display: flex;
-  gap: 8px;
+.action-buttons { 
+  display: flex; 
+  gap: 8px; 
 }
 
 .btn-admin-action {
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  border: none; 
+  padding: 6px 12px; 
+  border-radius: 8px; 
+  font-size: 0.8rem; 
   font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s;
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  white-space: nowrap;
 }
 
-.btn-admin-action.give {
-  background: var(--primary);
-  color: white;
+.btn-admin-action.give { 
+  background: var(--primary); 
+  color: white; 
 }
 
-.btn-admin-action.give:hover {
-  background: #1e3a8a;
+.btn-admin-action.return { 
+  background: white; 
+  border: 1px solid var(--success); 
+  color: var(--success); 
 }
 
-.btn-admin-action.return {
-  background: white;
-  border: 1px solid var(--success);
-  color: var(--success);
-}
-
-.btn-admin-action.return:hover {
-  background: var(--success);
-  color: white;
-}
-
-/* Estadísticas Footer Admin */
+/* Estadísticas Footer Admin (Responsive) */
 .admin-stats {
-  display: flex;
-  gap: 1rem;
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 1rem; 
   margin-top: 2rem;
 }
 
 .stat-card {
-  background: #f8fafc;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  flex: 1;
+  background: #f8fafc; 
+  padding: 1rem 1.5rem; 
+  border-radius: 12px; 
+  flex: 1; 
   border: 1px solid #e2e8f0;
+  min-width: 200px; /* Para que bajen en móvil */
 }
 
-.stat-card h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
-  color: #64748b;
+.stat-card h4 { 
+  margin: 0 0 0.5rem 0; 
+  font-size: 0.9rem; 
+  color: #64748b; 
 }
 
-.stat-card span {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary);
+.stat-card span { 
+  font-size: 2rem; 
+  font-weight: 800; 
+  color: var(--primary); 
 }
 
-.empty-tickets,
-.empty-state-admin {
-  color: #94a3b8;
-  font-style: italic;
-  text-align: center;
+.empty-tickets, .empty-state-admin {
+  color: #94a3b8; 
+  font-style: italic; 
+  text-align: center; 
   padding: 2rem;
+}
+
+/* AJUSTES MÓVIL ESPECÍFICOS */
+@media (max-width: 768px) {
+  .admin-rooms-panel { 
+    padding: 1rem; 
+  }
+  .admin-controls { 
+    flex-direction: column; 
+    align-items: stretch; 
+    gap: 1rem; 
+    padding: 1rem; 
+  }
+  .search-box-admin { 
+    min-width: auto; 
+    width: 100%; 
+  }
 }
