@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import "./Library.css";
 
 // FIREBASE IMPORTS
+// Importo solo lo justo y necesario de Firestore para no cargar cosas de más
 import { db } from "../../firebase/config";
 import { 
   collection, onSnapshot, query, doc, updateDoc, deleteDoc, 
@@ -11,6 +12,7 @@ import {
 } from "firebase/firestore";
 
 // UI & ASSETS
+// Componentes visuales y los iconos (me encantan los de lucide-react, son súper limpios)
 import PageHeader from "../../components/UI/PageHeader";
 import IconTech from "../../assets/icon-tech.svg"; 
 import IconHealth from "../../assets/icon-health.svg";
@@ -111,7 +113,7 @@ export const Library = () => {
 
   // Dar o quitar like
   const toggleFavorite = async (e, bookId) => {
-    e.stopPropagation(); // Esto evita que se abra el modal del libro cuando solo quiero dar like
+    e.stopPropagation(); // ¡Ojo! Esto evita que se abra el modal del libro cuando solo quiero dar like
     const favId = `${user.email}_${bookId}`; // Me invento un ID único combinando email y libro
     
     if (userFavorites.includes(bookId)) {
@@ -259,9 +261,10 @@ export const Library = () => {
       {/* --- VISTA DE ADMINISTRADOR --- */}
       {isAdmin ? (
         <div className="admin-lib-panel">
+          {/* AQUI ESTABA EL PROBLEMA: Ahora usamos los mismos estilos que en Rooms */}
           <div className="admin-controls">
              <div className="search-box-admin">
-                <Search size={18}/>
+                <Search size={18} className="search-icon-admin"/>
                 <input 
                   placeholder="Buscar por alumno, libro o código..." 
                   value={adminSearch}
